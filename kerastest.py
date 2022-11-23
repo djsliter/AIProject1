@@ -23,6 +23,7 @@ model.evaluate(data,  [[1], [1], [1]])
 
 print(model.get_weights())
 
+
 # 1        1
 # 1        1       1
 # 1        1   
