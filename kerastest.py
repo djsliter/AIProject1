@@ -48,7 +48,7 @@ for x in range(0, len(weights), 2):
     # Append weights to genome copy, overwrite genome with new array
     genome = np.append(genome, weights[x])
 # Shows a "flattened" array of the weight values, in order 
-print("GENOME: ", genome)
+print("\nGENOME: ", genome)
 
 # Compiles the model, allows us to call it below
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -59,6 +59,6 @@ q = model(data)
 # Sets action to the output node index with highest value
 action = np.argmax(q)
 # See model outputs
-print(q)
+print("MODEL OUTPUT TENSOR: ", q)
 # Print the chosen action index
-print("Value: ", q[0][action], "\nAction: ", action)
+print("ACTION VALUE: ", q[0][action], "\nACTION: ", action)
