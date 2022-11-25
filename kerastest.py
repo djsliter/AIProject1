@@ -53,7 +53,7 @@ print("\nGENOME: ", genome)
 # Compiles the model, allows us to call it below
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 # Sample data, meaningless
-data = np.array([[1, 4, 2]], dtype=np.float32)
+data = np.array([[3, 4, 2]], dtype=np.float32)
 # Runs our data through the model
 q = model(data)
 # Sets action to the output node index with highest value
