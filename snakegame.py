@@ -4,6 +4,7 @@ Made with PyGame
 """
 
 import pygame, sys, time, random
+import kerastest as kt
 
 # Difficulty settings
 # Easy      ->  10
@@ -107,6 +108,17 @@ while True:
             # Esc -> Create event to quit the game
             if event.key == pygame.K_ESCAPE:
                 pygame.event.post(pygame.event.Event(pygame.QUIT))
+        # # running AI
+        # else:
+        #     choice = kt.runModel()
+        #     if choice == 0:
+        #         change_to = 'UP'
+        #     if choice == 1:
+        #         change_to = 'RIGHT'
+        #     if choice == 2:
+        #         change_to = 'DOWN'
+        #     if choice == 3:
+        #         change_to = 'LEFT'
 
     # Making sure the snake cannot move in the opposite direction instantaneously
     if change_to == 'UP' and direction != 'DOWN':

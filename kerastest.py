@@ -62,3 +62,11 @@ action = np.argmax(q)
 print("MODEL OUTPUT TENSOR: ", q)
 # Print the chosen action index
 print("ACTION VALUE: ", q[0][action], "\nACTION: ", action)
+
+# Runs data through model as a function
+def runModel(data):
+    # Runs our data through the model
+    q = model(data)
+    # Sets action to the output node index with highest value
+    action = np.argmax(q)
+    return action
