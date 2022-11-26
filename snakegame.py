@@ -6,6 +6,7 @@ Made with PyGame
 import pygame, sys, time, random
 # import kerastest as kt
 import neuralnet as nn
+import numpy as np
 
 # Difficulty settings
 # Easy      ->  10
@@ -91,6 +92,7 @@ def show_score(choice, color, font, size):
 
 # Main logic
 while True:
+    choice = nn.runModel(np.array([[food_pos[0], snake_pos[0], food_pos[1]]], dtype=np.float32))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -109,17 +111,17 @@ while True:
             # Esc -> Create event to quit the game
             if event.key == pygame.K_ESCAPE:
                 pygame.event.post(pygame.event.Event(pygame.QUIT))
-        # # running AI
-        # else:
-        #     choice = nn.runModel()
-        #     if choice == 0:
-        #         change_to = 'UP'
-        #     if choice == 1:
-        #         change_to = 'RIGHT'
-        #     if choice == 2:
-        #         change_to = 'DOWN'
-        #     if choice == 3:
-        #         change_to = 'LEFT'
+        # running AI
+        else:
+            # choice = nn.runModel(np.array([[food_pos[0], snake_pos[0], food_pos[1]]], dtype=np.float32))
+            if choice == 0:
+                change_to = 'UP'
+            if choice == 1:
+                change_to = 'RIGHT'
+            if choice == 2:
+                change_to = 'DOWN'
+            if choice == 3:
+                change_to = 'LEFT'
 
     # Making sure the snake cannot move in the opposite direction instantaneously
     if change_to == 'UP' and direction != 'DOWN':

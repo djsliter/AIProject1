@@ -58,4 +58,5 @@ def runModel(data):
     q = model(data)
     # Sets action to the output node index with highest value
     action = np.argmax(q)
+    print("ACTION VALUE: ", q[0][action], "\nACTION: ", action)
     return action
