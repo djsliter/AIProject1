@@ -4,7 +4,8 @@ Made with PyGame
 """
 
 import pygame, sys, time, random
-import kerastest as kt
+# import kerastest as kt
+import neuralnet as nn
 
 # Difficulty settings
 # Easy      ->  10
@@ -110,7 +111,7 @@ while True:
                 pygame.event.post(pygame.event.Event(pygame.QUIT))
         # # running AI
         # else:
-        #     choice = kt.runModel()
+        #     choice = nn.runModel()
         #     if choice == 0:
         #         change_to = 'UP'
         #     if choice == 1:
