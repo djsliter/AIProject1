@@ -7,6 +7,18 @@ import pygame, sys, time, random
 # import kerastest as kt
 import neuralnet as nn
 import numpy as np
+import argparse
+
+
+parser = argparse.ArgumentParser(
+                    prog = 'SnakeGame',
+                    description = 'The game called Snake')
+parser.add_argument('--genome', nargs=44, type=float)
+
+genome = []
+for _, value in parser.parse_args()._get_kwargs():
+    if value is not None:
+        genome = value
 
 # Difficulty settings
 # Easy      ->  10
@@ -20,6 +32,7 @@ difficulty = 10
 frame_size_x = 720
 frame_size_y = 480
 
+total_ticks = 0
 # Checks for errors encountered
 check_errors = pygame.init()
 # pygame.init() example output -> (6, 0)
@@ -42,7 +55,7 @@ white = pygame.Color(255, 255, 255)
 red = pygame.Color(255, 0, 0)
 green = pygame.Color(0, 255, 0)
 blue = pygame.Color(0, 0, 255)
-magenta  = pygame.Color(255,0,255)
+magenta = pygame.Color(255, 0, 255)
 
 
 # FPS (frames per second) controller
@@ -74,7 +87,7 @@ def game_over():
     pygame.display.flip()
     time.sleep(3)
     pygame.quit()
-    sys.exit()
+    #sys.exit()
 
 
 # Score
@@ -90,13 +103,18 @@ def show_score(choice, color, font, size):
     # pygame.display.flip()
 
 
+neural_net = nn.NeuralNetwork((3, ), 3, (3, 5), 5, (5, 4), 4)
+neural_net.set_weights_from_genome(genome)
 # Main logic
 while True:
-    choice = nn.runModel(np.array([[food_pos[0], snake_pos[0], food_pos[1]]], dtype=np.float32))
+    choice = neural_net.runModel(np.array([[food_pos[0], snake_pos[0], food_pos[1]]], dtype=np.float32))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-            sys.exit()
+            print('total_ticks ' + str(total_ticks))
+            print('score ' + str(score))
+            break
+            #sys.exit()
         # Whenever a key is pressed down
         elif event.type == pygame.KEYDOWN:
             # W -> Up; S -> Down; A -> Left; D -> Right
@@ -167,7 +185,7 @@ while True:
             pygame.draw.rect(game_window, magenta, pygame.Rect(pos[0], pos[1], 10, 10))
         else:
             pygame.draw.rect(game_window, green, pygame.Rect(pos[0], pos[1], 10, 10))
-        
+
         body_part += 1
 
     # Snake food
@@ -177,15 +195,25 @@ while True:
     # Getting out of bounds
     if snake_pos[0] < 0 or snake_pos[0] > frame_size_x-10:
         game_over()
+        print('total_ticks ' + str(total_ticks))
+        print('score ' + str(score))
+        break
     if snake_pos[1] < 0 or snake_pos[1] > frame_size_y-10:
         game_over()
+        print('total_ticks ' + str(total_ticks))
+        print('score ' + str(score))
+        break
     # Touching the snake body
     for block in snake_body[1:]:
         if snake_pos[0] == block[0] and snake_pos[1] == block[1]:
             game_over()
-
+            print('total_ticks ' + str(total_ticks))
+            print('score ' + str(score))
+            break
     show_score(1, white, 'consolas', 20)
     # Refresh game screen
     pygame.display.update()
     # Refresh rate
     fps_controller.tick(difficulty)
+    total_ticks += difficulty
+
