@@ -1,10 +1,10 @@
 import copy
 import itertools
 import random
-import subprocess
 import pygame
 
 import nogui_game
+
 
 def fit_func(individual):
     game1 = nogui_game.SnakeGame(10, individual, pygame)
@@ -17,6 +17,7 @@ def fit_func(individual):
     print(food_score + time_score)
     return food_score + time_score
 
+
 def tournament_selection(sample):
     scores = [sum(ind) for ind in sample]
     return sample[scores.index(max(scores))]
@@ -25,27 +26,28 @@ def tournament_selection(sample):
 def random_selection(sample):
     return sample[random.randint(0, len(sample) - 1)]
 
+
 def mutate_slightly(value):
     random_val = random.random()
-    if random_val > 0.5:
-        random_val = random_val / 10.
-        if value - random_val < 0:
-            return 0.0
-        return value - random_val
-    elif random_val > 0.2:
-        random_val = random_val / 3.0
-    if value + random_val > 1:
-        return 1
-    return value + random_val
+    random_sign = -1 if random.random() <= 0.5 else 1
+    random_change = random_val * random_sign * 0.1
+
+    new_weight = value + random_change
+    if new_weight <= -1.0:
+        return -1.0
+    elif new_weight >= 1.0:
+        return 1.0
+    else:
+        return new_weight
 
 
-pop_size = 10
+pop_size = 25
 genome_size = 44
 num_gens = 100
 
-elitism = False
-mut_rate = 1 / genome_size
-cx_rate = 0  # 1/2
+elitism = True
+mut_rate = 2 / genome_size
+cx_rate = 0.1  # 1/2
 
 # For printing numbers at end to visualize.
 max_fitnesses = []
@@ -56,19 +58,22 @@ population = []
 
 # Initialize the population.
 for i in range(pop_size):
-    population.append([random.random() for _ in range(genome_size)])
+    population.append([random.random() if random.random() >= 0.6 else -random.random() for _ in range(genome_size)])
+print(population)
 
+gen_count = 1
 for gen in range(num_gens):
 
     print("\n" + "-" * 80 + " ")
 
     # Evaluate the population
     fitnesses = [fit_func(p) for p in population]
-    with open('current_gen.txt', 'w') as f:
+    with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
         for p in population:
             f.write(str(p) + '\n')
         f.write(str(fitnesses) + '\n')
     f.close()
+    gen_count += 1
     # Track fitnesses
     max_fitnesses.append(max(fitnesses))
     avg_fitnesses.append(sum(fitnesses) / len(fitnesses))
@@ -137,4 +142,3 @@ print("gens = " + str([g for g in range(num_gens)]))
 print("max_fit = " + str(max_fitnesses))
 print("avg_fit = " + str(avg_fitnesses))
 print("num_clones = " + str(num_clones))
-
