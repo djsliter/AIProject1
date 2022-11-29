@@ -3,6 +3,7 @@ import itertools
 import random
 import pygame
 import threading
+import time
 
 import nogui_game
 
@@ -16,9 +17,7 @@ def fit_func(individual):
     food_score = game1.score * 1000  # weigh picking up more food heavily
     time_score = game1.total_ticks  # use time in seconds as survival time
     print(food_score + time_score)
-    fitnesses.append(food_score + time_score)
-    return
-
+    return food_score + time_score
 
 def tournament_selection(sample):
     scores = [sum(ind) for ind in sample]
@@ -69,17 +68,17 @@ for gen in range(num_gens):
     print("\n" + "-" * 80 + " ")
 
     # Evaluate the population
-    fitnesses = []
-    threads = []
-    t = 0
-    for p in population:
-        threads.append("thread" + str(t))
-        threads[t] = threading.Thread(target=fit_func, args=([p]))
-        threads[t].start()
-        t += 1
-    for h in range(0, t):
-        threads[h].join()
-    # fitnesses = [fit_func(p) for p in population]
+    # fitnesses = []
+    # threads = []
+    # t = 0
+    # for p in population:
+    #     threads.append("thread" + str(t))
+    #     threads[t] = threading.Thread(target=fit_func, args=([p]))
+    #     threads[t].start()
+    #     t += 1
+    # for h in range(0, t):
+    #     threads[h].join()
+    fitnesses = [fit_func(p) for p in population]
     with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
         for p in population:
             f.write("Pop: " + str(p) + '\n')
