@@ -67,5 +67,5 @@ class NeuralNetwork:
         q = self.model(data)
         # Sets action to the output node index with highest value
         action = np.argmax(q)
-        print("ACTION VALUE: ", q[0][action], "\nACTION: ", action)
+        # print("ACTION VALUE: ", q[0][action], "\nACTION: ", action)
         return action

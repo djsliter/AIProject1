@@ -8,7 +8,7 @@ import multiprocessing as mp
 
 import nogui_game
 
-def fit_func(individual, num_inputs=3, input_node_count=3, hidden_node_count=5, num_output_nodes=4):
+def fit_func(individual, num_inputs=5, input_node_count=6, hidden_node_count=10, num_output_nodes=4):
     game1 = nogui_game.SnakeGame(120, individual)
     game1.runGame()
 

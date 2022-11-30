@@ -5,7 +5,7 @@ import neuralnet as nn
 import numpy as np
 
 class SnakeGame:
-    def __init__(self, difficulty, genome, input_count=3, input_node_count=3, hidden_node_count=5, output_node_count=4, pygame=pygame):
+    def __init__(self, difficulty, genome, input_count=5, input_node_count=6, hidden_node_count=10, output_node_count=4, pygame=pygame):
         self.input_count = input_count
         self.input_node_count = input_node_count
         self.hidden_node_count = hidden_node_count
