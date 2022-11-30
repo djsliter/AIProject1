@@ -124,14 +124,14 @@ if __name__ == '__main__':
         avg_fitnesses.append(sum(fitnesses) / len(fitnesses))
 
         print("Generation: {}".format(gen), end=" ")
-        print("Max Fitness: {}".format(max_fitnesses[-1]))
-        print("Avg Fitness: {}".format(avg_fitnesses[-1]))
+        # print("Max Fitness: {}".format(max_fitnesses[-1]))
+        # print("Avg Fitness: {}".format(avg_fitnesses[-1]))
 
         # Print out the population.
         # Note: Comment out if you have larger populations as it might be hard to read.
-        print("Population Genomes:")
-        for p in population:
-            print("\t\t\t", p)
+        # print("Population Genomes:")
+        # for p in population:
+        #     print("\t\t\t", p)
 
         # Calculate duplicates
         duplicates = copy.deepcopy(population)
@@ -141,9 +141,9 @@ if __name__ == '__main__':
         num_clones.append(pop_size - len(list(k for k, _ in itertools.groupby(duplicates))))
 
         print("\tNumber of Clones in Population: {}".format(num_clones[-1]))
-        print("\tUnique Genomes in Population: ")
-        for clone in list(k for k, _ in itertools.groupby(duplicates)):
-            print("\t\t\t\t", clone)
+        # print("\tUnique Genomes in Population: ")
+        # for clone in list(k for k, _ in itertools.groupby(duplicates)):
+        #     print("\t\t\t\t", clone)
 
         # Early Exit
         # if max(fitnesses) == genome_size:
@@ -179,14 +179,14 @@ if __name__ == '__main__':
 
         population = new_pop
 
-# Print out final population
-# print("\n\n\nFinal Population is:")
-# for p in population:
-#     print(f"Fitness: {fit_func(p)}, Individual: {p}")
+    # Print out final population
+    # print("\n\n\nFinal Population is:")
+    # for p in population:
+    #     print(f"Fitness: {fit_func(p)}, Individual: {p}")
 
-# Print out final tracking information.
-print()
-print("gens = " + str([g for g in range(num_gens)]))
-print("max_fit = " + str(max_fitnesses))
-print("avg_fit = " + str(avg_fitnesses))
-print("num_clones = " + str(num_clones))
+    # Print out final tracking information.
+    print()
+    print("gens = " + str([g for g in range(num_gens)]))
+    print("max_fit = " + str(max_fitnesses))
+    print("avg_fit = " + str(avg_fitnesses))
+    print("num_clones = " + str(num_clones))
