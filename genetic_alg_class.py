@@ -98,86 +98,86 @@ else:
             population.append(ast.literal_eval(f.readline()))
     f.close()
 
-print(population)
+# print(population)
+if __name__ == '__main__':
+    gen_count = 1
+    for gen in range(num_gens):
 
-gen_count = 1
-for gen in range(num_gens):
+        print("\n" + "-" * 80 + " ")
 
-    print("\n" + "-" * 80 + " ")
+        # Evaluate the population
+        pool_args = [[p, input_count, args.input_nodes, args.hidden_nodes, output_node_count] for p in population]
+        pool = mp.Pool()
+        fitnesses = pool.starmap(fit_func, pool_args)
+        pool.close()
+        # fitnesses = [fit_func(p, input_count, args.input_nodes, args.hidden_nodes, output_node_count) for p in population]
+        if (gen_count - 1) % save_rate == 0:
+            with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
+                f.write(str(pop_size) + '\n')
+                for p in population:
+                    f.write(str(p) + '\n')
+                f.write(str(fitnesses) + '\n')
+            f.close()
+        gen_count += 1
+        # Track fitnesses
+        max_fitnesses.append(max(fitnesses))
+        avg_fitnesses.append(sum(fitnesses) / len(fitnesses))
 
-    # Evaluate the population
-    pool_args = [[p, input_count, args.input_nodes, args.hidden_nodes, output_node_count] for p in population]
-    pool = mp.Pool()
-    fitnesses = pool.starmap(fit_func, pool_args)
-    pool.close()
-    # fitnesses = [fit_func(p, input_count, args.input_nodes, args.hidden_nodes, output_node_count) for p in population]
-    if (gen_count - 1) % save_rate == 0:
-        with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
-            f.write(str(pop_size) + '\n')
-            for p in population:
-                f.write(str(p) + '\n')
-            f.write(str(fitnesses) + '\n')
-        f.close()
-    gen_count += 1
-    # Track fitnesses
-    max_fitnesses.append(max(fitnesses))
-    avg_fitnesses.append(sum(fitnesses) / len(fitnesses))
+        print("Generation: {}".format(gen), end=" ")
+        print("Max Fitness: {}".format(max_fitnesses[-1]))
+        print("Avg Fitness: {}".format(avg_fitnesses[-1]))
 
-    print("Generation: {}".format(gen), end=" ")
-    print("Max Fitness: {}".format(max_fitnesses[-1]))
-    print("Avg Fitness: {}".format(avg_fitnesses[-1]))
+        # Print out the population.
+        # Note: Comment out if you have larger populations as it might be hard to read.
+        print("Population Genomes:")
+        for p in population:
+            print("\t\t\t", p)
 
-    # Print out the population.
-    # Note: Comment out if you have larger populations as it might be hard to read.
-    print("Population Genomes:")
-    for p in population:
-        print("\t\t\t", p)
+        # Calculate duplicates
+        duplicates = copy.deepcopy(population)
+        duplicates.sort()
 
-    # Calculate duplicates
-    duplicates = copy.deepcopy(population)
-    duplicates.sort()
+        # Track Number of Clones in Population
+        num_clones.append(pop_size - len(list(k for k, _ in itertools.groupby(duplicates))))
 
-    # Track Number of Clones in Population
-    num_clones.append(pop_size - len(list(k for k, _ in itertools.groupby(duplicates))))
+        print("\tNumber of Clones in Population: {}".format(num_clones[-1]))
+        print("\tUnique Genomes in Population: ")
+        for clone in list(k for k, _ in itertools.groupby(duplicates)):
+            print("\t\t\t\t", clone)
 
-    print("\tNumber of Clones in Population: {}".format(num_clones[-1]))
-    print("\tUnique Genomes in Population: ")
-    for clone in list(k for k, _ in itertools.groupby(duplicates)):
-        print("\t\t\t\t", clone)
+        # Early Exit
+        # if max(fitnesses) == genome_size:
+        # 	break
 
-    # Early Exit
-    # if max(fitnesses) == genome_size:
-    # 	break
+        new_pop = []
 
-    new_pop = []
+        # Elitism
+        if elitism:
+            print("Keeping Elite Individual")
+            new_pop.append(copy.deepcopy(population[fitnesses.index(max(fitnesses))]))
 
-    # Elitism
-    if elitism:
-        print("Keeping Elite Individual")
-        new_pop.append(copy.deepcopy(population[fitnesses.index(max(fitnesses))]))
+        for _ in range(pop_size - len(new_pop)):
 
-    for _ in range(pop_size - len(new_pop)):
+            # Select two parents.
+            par_1 = copy.deepcopy(tournament_selection(random.sample(population, 3)))
+            par_2 = copy.deepcopy(tournament_selection(random.sample(population, 3)))
 
-        # Select two parents.
-        par_1 = copy.deepcopy(tournament_selection(random.sample(population, 3)))
-        par_2 = copy.deepcopy(tournament_selection(random.sample(population, 3)))
+            # Perform crossover.
+            new_ind = par_1[:]
+            if random.random() < cx_rate:
+                crossover_point = random.choice([0, genome_size])
+                new_ind = par_1[:crossover_point] + par_2[crossover_point:]
 
-        # Perform crossover.
-        new_ind = par_1[:]
-        if random.random() < cx_rate:
-            crossover_point = random.choice([0, genome_size])
-            new_ind = par_1[:crossover_point] + par_2[crossover_point:]
+            # Mutate the individual.
+            new_ind = [i if random.random() > mut_rate else (mutate_slightly(i)) for i in new_ind]
 
-        # Mutate the individual.
-        new_ind = [i if random.random() > mut_rate else (mutate_slightly(i)) for i in new_ind]
+            # disable genes
+            new_ind = [i if random.random() > disable_rate else 0 for i in new_ind]
 
-        # disable genes
-        new_ind = [i if random.random() > disable_rate else 0 for i in new_ind]
+            # Add to the population
+            new_pop.append(new_ind)
 
-        # Add to the population
-        new_pop.append(new_ind)
-
-    population = new_pop
+        population = new_pop
 
 # Print out final population
 # print("\n\n\nFinal Population is:")
