@@ -3,7 +3,11 @@ import neuralnet as nn
 import numpy as np
 
 class SnakeGame:
-    def __init__(self, difficulty, genome, pygame):    
+    def __init__(self, difficulty, genome, input_count, input_node_count, hidden_node_count, output_node_count, pygame):
+        self.input_count = input_count
+        self.input_node_count = input_node_count
+        self.hidden_node_count = hidden_node_count
+        self.output_node_count = output_node_count
         # Difficulty settings
         # Easy      ->  10
         # Medium    ->  25
@@ -59,7 +63,7 @@ class SnakeGame:
     def runGame(self):
         # Initialise game window
         
-        neural_net = nn.NeuralNetwork((3, ), 3, (3, 5), 5, (5, 4), 4)
+        neural_net = nn.NeuralNetwork((self.input_count, ), self.input_node_count, (self.input_node_count, self.hidden_node_count), self.hidden_node_count, (self.hidden_node_count, self.output_node_count), self.output_node_count)
         neural_net.set_weights_from_genome(self.genome)
 
         # Main logic

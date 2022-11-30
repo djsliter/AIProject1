@@ -7,12 +7,13 @@ import numpy as np
 class NeuralNetwork:
     def __init__(self, in_dim, num_in_nodes, in_hidden_dim, num_hidden_nodes, hidden_out_dim, num_output_nodes):
         # Set number of nodes for each layer, and dimensionality
-        self.in_dim = (3,)  # TODO swap for vals in constructor
-        self.num_in_nodes = 3
-        self.in_hidden_dim = (3, 5)
-        self.num_hidden_nodes = 5
-        self.hidden_out_dim = (5, 4)
-        self.num_output_nodes = 4
+        self.in_dim = in_dim
+        self.num_in_nodes = num_in_nodes
+        self.in_hidden_dim = in_hidden_dim
+        self.num_hidden_nodes = num_hidden_nodes
+        self.hidden_out_dim = hidden_out_dim
+        self.num_output_nodes = num_output_nodes
+        self.genes_populated=0
 
         # Create the neural network model
         self.model = Sequential()
@@ -36,28 +37,29 @@ class NeuralNetwork:
             genome = np.append(genome, weights[x])
         return genome
 
+    def increment_gene_count(self, gene):
+        self.genes_populated += 1
+        return gene
+
     def set_weights_from_genome(self, genome):
         # Implement function that takes in the genome, then sets weights of the net
         # properly in accordance with the provided 1D array. Tricky, requires
         # reshaping segments of the genome array, setting bias values to 0, etc.
-        # Format for model.set_weights(wts) =
-        wts = [
-            np.array([[genome[0], genome[1], genome[2]], [genome[3], genome[4], genome[5]],
-                      [genome[6], genome[7], genome[8]]], dtype=np.float32),
-            np.array([0., 0., 0.], dtype=np.float32),
-            np.array([[genome[9], genome[10], genome[11], genome[12], genome[13]],
-                       [genome[14], genome[15], genome[16], genome[17], genome[18]],
-                      [genome[19], genome[20], genome[21], genome[22], genome[23]]], dtype=np.float32),
-            np.array([0., 0., 0., 0., 0.], dtype=np.float32),
-            np.array([[genome[24], genome[25], genome[26], genome[27]],
-                       [genome[28], genome[29], genome[30], genome[31]],
-                      [genome[32], genome[33], genome[34], genome[35]],
-                      [genome[36], genome[37], genome[38], genome[39]],
-                      [genome[40], genome[41], genome[42], genome[43]]], dtype=np.float32),
-            np.array([0., 0., 0., 0.], dtype=np.float32)
+        num_inputs = self.in_dim[0]
+
+        dyn_wts = [
+            np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_in_nodes)]
+                  for _ in range(0, num_inputs)], dtype=np.float32),
+            np.array([0.0 for _ in range(0, self.num_in_nodes)], dtype=np.float32),
+            np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_hidden_nodes)]
+                      for _ in range(0, self.num_in_nodes)], dtype=np.float32),
+            np.array([0.0 for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
+            np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_output_nodes)]
+                      for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
+            np.array([0.0 for _ in range(0, self.num_output_nodes)], dtype=np.float32)
         ]
         # Need to build the shape of wts above from provided genome
-        self.model.set_weights(wts)
+        self.model.set_weights(dyn_wts)
 
         # Runs data through model as a function
     def runModel(self, data):

@@ -7,8 +7,8 @@ import argparse
 import nogui_game
 
 
-def fit_func(individual):
-    game1 = nogui_game.SnakeGame(10, individual, pygame)
+def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes):
+    game1 = nogui_game.SnakeGame(10, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
     game1.runGame()
 
     """ Calculate the fitness of an individual. """
@@ -48,8 +48,8 @@ parser.add_argument('--eliteism', action='store_true', help='Enables Eliteism')
 parser.add_argument('--gens', nargs='?', type=int, default=100, help='Specify the number of generations to train the population')
 parser.add_argument('--mut_rate', nargs='?', type=float, default=0.5, help='Specify how frequently a gene should randomly mutate')
 parser.add_argument('--cx_rate', nargs='?', type=float, default=0.1, help='Specify how frequently a child should cross over')
-parser.add_argument('--hidden_nodes', nargs='?', type=int, default=15, help='Specify how many hidden nodes to use')
-parser.add_argument('--input_nodes', nargs='?', type=int, default=10, help='Specify how many input nodes')
+parser.add_argument('--hidden_nodes', nargs='?', type=int, default=5, help='Specify how many hidden nodes to use')
+parser.add_argument('--input_nodes', nargs='?', type=int, default=3, help='Specify how many input nodes')
 
 
 args = parser.parse_args()
@@ -61,7 +61,7 @@ print(args.cx_rate)
 print(args.hidden_nodes)
 print(args.input_nodes)
 
-input_count = 10
+input_count = 3
 output_node_count = 4
 
 pop_size = args.pop
@@ -90,7 +90,7 @@ for gen in range(num_gens):
     print("\n" + "-" * 80 + " ")
 
     # Evaluate the population
-    fitnesses = [fit_func(p) for p in population]
+    fitnesses = [fit_func(p, input_count, args.input_nodes, args.hidden_nodes, output_node_count) for p in population]
     with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
         for p in population:
             f.write("Pop: " + str(p) + '\n')
@@ -155,9 +155,9 @@ for gen in range(num_gens):
     population = new_pop
 
 # Print out final population
-print("\n\n\nFinal Population is:")
-for p in population:
-    print(f"Fitness: {fit_func(p)}, Individual: {p}")
+# print("\n\n\nFinal Population is:")
+# for p in population:
+#     print(f"Fitness: {fit_func(p)}, Individual: {p}")
 
 # Print out final tracking information.
 print()
