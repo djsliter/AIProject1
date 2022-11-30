@@ -93,8 +93,8 @@ for gen in range(num_gens):
     fitnesses = [fit_func(p) for p in population]
     with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
         for p in population:
-            f.write(str(p) + '\n')
-        f.write(str(fitnesses) + '\n')
+            f.write("Pop: " + str(p) + '\n')
+        f.write("Fitness: " + str(fitnesses) + '\n')
     f.close()
     gen_count += 1
     # Track fitnesses
