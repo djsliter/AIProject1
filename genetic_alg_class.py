@@ -2,6 +2,7 @@ import copy
 import itertools
 import random
 import pygame
+import argparse
 
 import nogui_game
 
@@ -30,24 +31,46 @@ def random_selection(sample):
 def mutate_slightly(value):
     random_val = random.random()
     random_sign = -1 if random.random() <= 0.5 else 1
-    random_change = random_val * random_sign * 0.1
+    random_change = random_val * random_sign * 0.1  # randomly mutates by -0.1 to 0.1
 
     new_weight = value + random_change
-    if new_weight <= -1.0:
+    if new_weight <= -1.0:  # keep weights above -1
         return -1.0
-    elif new_weight >= 1.0:
+    elif new_weight >= 1.0:  # keep weights below 1
         return 1.0
     else:
         return new_weight
 
+# note: can't specify number of inputs (not input nodes) because NN constructor uses inputs as args
+parser = argparse.ArgumentParser()
+parser.add_argument('--pop', nargs='?', type=int, default=25, help='Specify the number of individuals in the population (default 25)')
+parser.add_argument('--eliteism', action='store_true', help='Enables Eliteism')
+parser.add_argument('--gens', nargs='?', type=int, default=100, help='Specify the number of generations to train the population')
+parser.add_argument('--mut_rate', nargs='?', type=float, default=0.5, help='Specify how frequently a gene should randomly mutate')
+parser.add_argument('--cx_rate', nargs='?', type=float, default=0.1, help='Specify how frequently a child should cross over')
+parser.add_argument('--hidden_nodes', nargs='?', type=int, default=15, help='Specify how many hidden nodes to use')
+parser.add_argument('--input_nodes', nargs='?', type=int, default=10, help='Specify how many input nodes')
 
-pop_size = 25
-genome_size = 44
-num_gens = 100
 
-elitism = True
-mut_rate = 2 / genome_size
-cx_rate = 0.1  # 1/2
+args = parser.parse_args()
+print(args.pop)
+print(args.eliteism)
+print(args.gens)
+print(args.mut_rate)
+print(args.cx_rate)
+print(args.hidden_nodes)
+print(args.input_nodes)
+
+input_count = 10
+output_node_count = 4
+
+pop_size = args.pop
+genome_size = input_count * args.input_nodes + args.input_nodes * args.hidden_nodes + args.hidden_nodes * output_node_count
+num_gens = args.gens
+
+elitism = args.eliteism
+mut_rate = args.mut_rate #2 / genome_size
+cx_rate = args.cx_rate  # 1/2
 
 # For printing numbers at end to visualize.
 max_fitnesses = []
