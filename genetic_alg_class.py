@@ -3,6 +3,7 @@ import itertools
 import random
 import pygame
 import argparse
+import ast
 
 import nogui_game
 
@@ -50,6 +51,7 @@ parser.add_argument('--mut_rate', nargs='?', type=float, default=0.5, help='Spec
 parser.add_argument('--cx_rate', nargs='?', type=float, default=0.1, help='Specify how frequently a child should cross over')
 parser.add_argument('--hidden_nodes', nargs='?', type=int, default=5, help='Specify how many hidden nodes to use')
 parser.add_argument('--input_nodes', nargs='?', type=int, default=3, help='Specify how many input nodes')
+parser.add_argument('--start_file', nargs='?', default='', help='specify the file to get the starting population from (defualt generate random new pop)')
 
 
 args = parser.parse_args()
@@ -80,8 +82,16 @@ num_clones = []
 population = []
 
 # Initialize the population.
-for i in range(pop_size):
-    population.append([random.random() if random.random() >= 0.6 else -random.random() for _ in range(genome_size)])
+if args.start_file == '':
+    for i in range(pop_size):
+        population.append([random.random() if random.random() >= 0.6 else -random.random() for _ in range(genome_size)])
+else:
+    with open(args.start_file, 'r') as f:
+        pop_size = int(f.readline())
+        for x in range(0, pop_size):
+            population.append(ast.literal_eval(f.readline()))
+    f.close()
+
 print(population)
 
 gen_count = 1
@@ -92,9 +102,10 @@ for gen in range(num_gens):
     # Evaluate the population
     fitnesses = [fit_func(p, input_count, args.input_nodes, args.hidden_nodes, output_node_count) for p in population]
     with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
+        f.write(str(pop_size) + '\n')
         for p in population:
-            f.write("Pop: " + str(p) + '\n')
-        f.write("Fitness: " + str(fitnesses) + '\n')
+            f.write(str(p) + '\n')
+        f.write(str(fitnesses) + '\n')
     f.close()
     gen_count += 1
     # Track fitnesses
