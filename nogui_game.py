@@ -1,3 +1,5 @@
+import math
+
 import pygame, sys, time, random
 import neuralnet as nn
 import numpy as np
@@ -65,11 +67,18 @@ class SnakeGame:
         
         neural_net = nn.NeuralNetwork((self.input_count, ), self.input_node_count, (self.input_node_count, self.hidden_node_count), self.hidden_node_count, (self.hidden_node_count, self.output_node_count), self.output_node_count)
         neural_net.set_weights_from_genome(self.genome)
-
+        self.last_choice = 0
+        self.last_eat_time = 0
         # Main logic
         while True:
+            distance_from_head_x_to_food_x = self.snake_pos[0] - self.food_pos[0] # math.sqrt(math.pow((self.snake_pos[0] - self.food_pos[0]), 2))
+            distance_from_head_y_to_food_y = self.snake_pos[1] - self.food_pos[1] # math.sqrt(math.pow((self.snake_pos[1] - self.food_pos[1]), 2))
+            distance_from_head_x_to_tail_x = self.snake_pos[0] - self.snake_body[len(self.snake_body) - 1][0]
+            distance_from_head_y_to_tail_y = self.snake_pos[1] - self.snake_body[len(self.snake_body) - 1][1]
+
             # Neural net makes a choice
-            choice = neural_net.runModel(np.array([[self.food_pos[0], self.snake_pos[0], self.food_pos[1]]], dtype=np.float32))
+            choice = neural_net.runModel(np.array([[distance_from_head_x_to_food_x, distance_from_head_y_to_food_y, distance_from_head_x_to_tail_x, distance_from_head_y_to_tail_y, self.last_choice]], dtype=np.float32))
+            self.last_choice = choice
             # Based on choice, set direction to change to
             if choice == 0:
                 self.change_to = 'UP'
@@ -104,6 +113,7 @@ class SnakeGame:
             if self.snake_pos[0] == self.food_pos[0] and self.snake_pos[1] == self.food_pos[1]:
                 self.score += 1
                 self.food_spawn = False
+                self.last_eat_time = self.total_ticks
             else:
                 self.snake_body.pop()
 
@@ -114,6 +124,11 @@ class SnakeGame:
 
             
             # Game Over conditions -----------------------------------------------
+            if self.total_ticks > self.last_eat_time + 10000:
+                self.game_over()
+                print('total_ticks ' + str(self.total_ticks))
+                print('score ' + str(self.score))
+                break
             # Getting out of bounds
             if self.snake_pos[0] < 0 or self.snake_pos[0] > self.frame_size_x-10:
                 self.game_over()
