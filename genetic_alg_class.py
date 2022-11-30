@@ -4,6 +4,7 @@ import random
 import pygame
 import argparse
 import ast
+import multiprocessing as mp
 
 import nogui_game
 
@@ -105,7 +106,11 @@ for gen in range(num_gens):
     print("\n" + "-" * 80 + " ")
 
     # Evaluate the population
-    fitnesses = [fit_func(p, input_count, args.input_nodes, args.hidden_nodes, output_node_count) for p in population]
+    pool_args = [[p, input_count, args.input_nodes, args.hidden_nodes, output_node_count] for p in population]
+    pool = mp.Pool()
+    fitnesses = pool.starmap(fit_func, pool_args)
+    pool.close()
+    # fitnesses = [fit_func(p, input_count, args.input_nodes, args.hidden_nodes, output_node_count) for p in population]
     if (gen_count - 1) % save_rate == 0:
         with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
             f.write(str(pop_size) + '\n')
