@@ -1,5 +1,6 @@
 import copy
 import itertools
+import math
 import random
 import pygame
 import argparse
@@ -15,10 +16,17 @@ def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_ou
 
     """ Calculate the fitness of an individual. """
 
-    food_score = game1.score * 1000  # weigh picking up more food heavily
-    time_score = game1.total_ticks  # use time in seconds as survival time
-    print(food_score + time_score)
-    return food_score + time_score
+    #food_score = game1.score * 1000  # weigh picking up more food heavily
+    #time_score = game1.total_ticks  # use time in seconds as survival
+    food_score = math.sqrt(math.pow(game1.score, 3)) * 500  # weigh picking up more food heavily
+
+    time_score = game1.total_ticks  # use time in seconds as survival
+    avg_time_to_food = time_score
+    if food_score > 0:
+        avg_time_to_food = time_score/game1.score
+
+    print(food_score + time_score - 0.6*avg_time_to_food)
+    return food_score + time_score - 0.6*avg_time_to_food
 
 
 def tournament_selection(sample):
