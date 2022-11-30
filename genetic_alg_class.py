@@ -51,8 +51,11 @@ parser.add_argument('--mut_rate', nargs='?', type=float, default=0.5, help='Spec
 parser.add_argument('--cx_rate', nargs='?', type=float, default=0.1, help='Specify how frequently a child should cross over')
 parser.add_argument('--hidden_nodes', nargs='?', type=int, default=5, help='Specify how many hidden nodes to use')
 parser.add_argument('--input_nodes', nargs='?', type=int, default=3, help='Specify how many input nodes')
+parser.add_argument('--inputs', nargs='?', type=int, default=3, help='Specify how many inputs will be fed to the input nodes')
+parser.add_argument('--output_nodes', nargs='?', type=int, default=4, help='Specify how many output nodes')
 parser.add_argument('--start_file', nargs='?', default='', help='specify the file to get the starting population from (defualt generate random new pop)')
-
+parser.add_argument('--disable_rate', nargs='?', type=float, default=0.001, help='Specify how frequently a gene should be turned off')
+parser.add_argument('--save_rate', nargs='?', type=int, default=5, help='Specify how frequently to save the current generation to a file')
 
 args = parser.parse_args()
 print(args.pop)
@@ -63,8 +66,8 @@ print(args.cx_rate)
 print(args.hidden_nodes)
 print(args.input_nodes)
 
-input_count = 3
-output_node_count = 4
+input_count = args.inputs
+output_node_count = args.output_nodes
 
 pop_size = args.pop
 genome_size = input_count * args.input_nodes + args.input_nodes * args.hidden_nodes + args.hidden_nodes * output_node_count
@@ -73,7 +76,9 @@ num_gens = args.gens
 elitism = args.eliteism
 mut_rate = args.mut_rate #2 / genome_size
 cx_rate = args.cx_rate  # 1/2
+disable_rate = args.disable_rate
 
+save_rate = args.save_rate
 # For printing numbers at end to visualize.
 max_fitnesses = []
 avg_fitnesses = []
@@ -101,12 +106,13 @@ for gen in range(num_gens):
 
     # Evaluate the population
     fitnesses = [fit_func(p, input_count, args.input_nodes, args.hidden_nodes, output_node_count) for p in population]
-    with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
-        f.write(str(pop_size) + '\n')
-        for p in population:
-            f.write(str(p) + '\n')
-        f.write(str(fitnesses) + '\n')
-    f.close()
+    if (gen_count - 1) % save_rate == 0:
+        with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
+            f.write(str(pop_size) + '\n')
+            for p in population:
+                f.write(str(p) + '\n')
+            f.write(str(fitnesses) + '\n')
+        f.close()
     gen_count += 1
     # Track fitnesses
     max_fitnesses.append(max(fitnesses))
@@ -159,6 +165,9 @@ for gen in range(num_gens):
 
         # Mutate the individual.
         new_ind = [i if random.random() > mut_rate else (mutate_slightly(i)) for i in new_ind]
+
+        # disable genes
+        new_ind = [i if random.random() > disable_rate else 0 for i in new_ind]
 
         # Add to the population
         new_pop.append(new_ind)
