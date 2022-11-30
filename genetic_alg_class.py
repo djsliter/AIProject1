@@ -10,7 +10,7 @@ import nogui_game
 
 
 def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes):
-    game1 = nogui_game.SnakeGame(10, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
+    game1 = nogui_game.SnakeGame(120, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
     game1.runGame()
 
     """ Calculate the fitness of an individual. """
