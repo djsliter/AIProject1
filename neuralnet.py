@@ -1,3 +1,5 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Dense
@@ -63,8 +65,10 @@ class NeuralNetwork:
 
         # Runs data through model as a function
     def runModel(self, data):
+        # Normalize input data to reduce magnitude differences
+        normalized_data = keras.layers.UnitNormalization()(data)
         # Runs our data through the model
-        q = self.model(data)
+        q = self.model(normalized_data)
         # Sets action to the output node index with highest value
         action = np.argmax(q)
         # print("ACTION VALUE: ", q[0][action], "\nACTION: ", action)
