@@ -18,15 +18,15 @@ def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_ou
 
     #food_score = game1.score * 1000  # weigh picking up more food heavily
     #time_score = game1.total_ticks  # use time in seconds as survival
-    food_score = math.sqrt(math.pow(game1.score, 3)) * 500  # weigh picking up more food heavily
+    food_score = math.sqrt(math.pow(game1.score, 3)) * 600  # weigh picking up more food heavily
 
-    time_score = game1.total_ticks  # use time in seconds as survival
+    time_score = int(game1.total_ticks/2)  # use time in seconds as survival
     avg_time_to_food = time_score
     if food_score > 0:
         avg_time_to_food = time_score/game1.score
 
-    print(food_score + time_score - 0.6*avg_time_to_food)
-    return food_score + time_score - 0.6*avg_time_to_food
+    print(food_score + time_score - int(0.7*avg_time_to_food))
+    return food_score + time_score - int(0.7*avg_time_to_food)
 
 
 def tournament_selection(sample):
@@ -39,9 +39,7 @@ def random_selection(sample):
 
 
 def mutate_slightly(value):
-    random_val = random.random()
-    random_sign = -1 if random.random() <= 0.5 else 1
-    random_change = random_val * random_sign * 0.1  # randomly mutates by -0.1 to 0.1
+    random_change = random.uniform(-0.1, 0.1)  # randomly mutates by -0.1 to 0.1
 
     new_weight = value + random_change
     if new_weight <= -1.0:  # keep weights above -1
@@ -57,6 +55,7 @@ parser.add_argument('--pop', nargs='?', type=int, default=25, help='Specify the 
 parser.add_argument('--eliteism', action='store_true', help='Enables Eliteism')
 parser.add_argument('--gens', nargs='?', type=int, default=100, help='Specify the number of generations to train the population')
 parser.add_argument('--mut_rate', nargs='?', type=float, default=0.5, help='Specify how frequently a gene should randomly mutate')
+parser.add_argument('--big_mut_rate', nargs='?', type=float, default=0.05, help='Specify how frequently a gene should randomly mutate')
 parser.add_argument('--cx_rate', nargs='?', type=float, default=0.1, help='Specify how frequently a child should cross over')
 parser.add_argument('--hidden_nodes', nargs='?', type=int, default=5, help='Specify how many hidden nodes to use')
 parser.add_argument('--input_nodes', nargs='?', type=int, default=3, help='Specify how many input nodes')
@@ -84,6 +83,7 @@ num_gens = args.gens
 
 elitism = args.eliteism
 mut_rate = args.mut_rate #2 / genome_size
+big_mut_rate = args.big_mut_rate
 cx_rate = args.cx_rate  # 1/2
 disable_rate = args.disable_rate
 
@@ -98,12 +98,21 @@ population = []
 # Initialize the population.
 if args.start_file == '':
     for i in range(pop_size):
-        population.append([random.random() if random.random() >= 0.6 else -random.random() for _ in range(genome_size)])
+        population.append([random.uniform(-1.0, 1.0) for _ in range(genome_size)])
 else:
     with open(args.start_file, 'r') as f:
-        pop_size = int(f.readline())
-        for x in range(0, pop_size):
-            population.append(ast.literal_eval(f.readline()))
+        temp = int(f.readline())
+        if pop_size <= temp:
+            pop_size = temp
+            for x in range(0, pop_size):
+                population.append(ast.literal_eval(f.readline()))
+        else:
+            for x in range(temp):
+                population.append(ast.literal_eval(f.readline()))
+            for i in range(pop_size - temp):
+                population.append([random.uniform(-1.0, 1.0) for _ in range(genome_size)])
+
+
     f.close()
 
 # print(population)
@@ -176,8 +185,11 @@ if __name__ == '__main__':
                 crossover_point = random.choice([0, genome_size])
                 new_ind = par_1[:crossover_point] + par_2[crossover_point:]
 
-            # Mutate the individual.
+            # Slightly mutate the individual.
             new_ind = [i if random.random() > mut_rate else (mutate_slightly(i)) for i in new_ind]
+
+            # Mutate the individual.
+            new_ind = [i if random.random() > big_mut_rate else random.uniform(-1.0, 1.0) for i in new_ind]
 
             # disable genes
             new_ind = [i if random.random() > disable_rate else 0 for i in new_ind]
