@@ -1,7 +1,8 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import copy
 import itertools
 import numpy as np
-import math
 import random
 import pygame
 import argparse
@@ -10,22 +11,23 @@ import multiprocessing as mp
 
 import nogui_game
 
-max_score = 0
+# note: can't specify number of inputs (not input nodes) because NN constructor uses inputs as args
+parser = argparse.ArgumentParser()
+parser.add_argument('--pop', nargs='?', type=int, default=25, help='Specify the number of individuals in the population (default 25)')
+parser.add_argument('--eliteism', action='store_true', help='Enables Eliteism')
+parser.add_argument('--gens', nargs='?', type=int, default=50, help='Specify the number of generations to train the population')
+parser.add_argument('--mut_rate', nargs='?', type=float, default=0.3, help='Specify how frequently a gene should randomly mutate')
+parser.add_argument('--cx_rate', nargs='?', type=float, default=0.1, help='Specify how frequently a child should cross over')
+parser.add_argument('--hidden_nodes', nargs='?', type=int, default=10, help='Specify how many hidden nodes to use')
+parser.add_argument('--input_nodes', nargs='?', type=int, default=6, help='Specify how many input nodes')
+parser.add_argument('--inputs', nargs='?', type=int, default=5, help='Specify how many inputs will be fed to the input nodes')
+parser.add_argument('--output_nodes', nargs='?', type=int, default=4, help='Specify how many output nodes')
+parser.add_argument('--start_file', nargs='?', default='', help='specify the file to get the starting population from (defualt generate random new pop)')
+parser.add_argument('--disable_rate', nargs='?', type=float, default=0.001, help='Specify how frequently a gene should be turned off')
+parser.add_argument('--save_rate', nargs='?', type=int, default=5, help='Specify how frequently to save the current generation to a file')
 
-def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes):
-    global max_score
-    
-    game1 = nogui_game.SnakeGame(120, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
-    game1.runGame()
-
-    """ Calculate the fitness of an individual. """
-    if game1.score > 0:
-        if game1.score > max_score:
-            max_score = game1.score
-        print("SCORE: ", game1.score)
-        return 1200*game1.score/game1.total_ticks
-    else:
-        return game1.total_ticks
+args = parser.parse_args()
+# --pop 20 --eliteism --gens 20 --mut_rate 0.26 --cx_rate 0.12 --hidden_nodes 10 --inputs 5 --input_nodes 6 --output_nodes 4 --disable_rate 0.03 --save_rate 4
 
 def tournament_selection(sample):
     scores = [sum(ind) for ind in sample]
@@ -47,29 +49,22 @@ def mutate_slightly(value):
     else:
         return new_weight
 
-# note: can't specify number of inputs (not input nodes) because NN constructor uses inputs as args
-parser = argparse.ArgumentParser()
-parser.add_argument('--pop', nargs='?', type=int, default=25, help='Specify the number of individuals in the population (default 25)')
-parser.add_argument('--eliteism', action='store_true', help='Enables Eliteism')
-parser.add_argument('--gens', nargs='?', type=int, default=100, help='Specify the number of generations to train the population')
-parser.add_argument('--mut_rate', nargs='?', type=float, default=0.5, help='Specify how frequently a gene should randomly mutate')
-parser.add_argument('--cx_rate', nargs='?', type=float, default=0.1, help='Specify how frequently a child should cross over')
-parser.add_argument('--hidden_nodes', nargs='?', type=int, default=5, help='Specify how many hidden nodes to use')
-parser.add_argument('--input_nodes', nargs='?', type=int, default=3, help='Specify how many input nodes')
-parser.add_argument('--inputs', nargs='?', type=int, default=3, help='Specify how many inputs will be fed to the input nodes')
-parser.add_argument('--output_nodes', nargs='?', type=int, default=4, help='Specify how many output nodes')
-parser.add_argument('--start_file', nargs='?', default='', help='specify the file to get the starting population from (defualt generate random new pop)')
-parser.add_argument('--disable_rate', nargs='?', type=float, default=0.001, help='Specify how frequently a gene should be turned off')
-parser.add_argument('--save_rate', nargs='?', type=int, default=5, help='Specify how frequently to save the current generation to a file')
+max_score = 0
 
-args = parser.parse_args()
-print(args.pop)
-print(args.eliteism)
-print(args.gens)
-print(args.mut_rate)
-print(args.cx_rate)
-print(args.hidden_nodes)
-print(args.input_nodes)
+def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes):
+    global max_score
+
+    game1 = nogui_game.SnakeGame(120, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
+    game1.runGame()
+    
+    """ Calculate the fitness of an individual. """
+    if game1.score > 0:
+        if game1.score > max_score:
+            max_score = game1.score
+        print("SCORE: ", game1.score)
+        return 5000 * game1.score/game1.total_ticks
+    else:
+        return game1.total_ticks/100
 
 input_count = args.inputs
 output_node_count = args.output_nodes
@@ -104,8 +99,10 @@ else:
 
 if __name__ == '__main__':
     gen_count = 1
+    max_score = 0
     for gen in range(num_gens):
-        print("\n" + "-" * 80 + " ")
+        print("\nGeneration: {}".format(gen), end=" ")
+        print("-" * 80 + " ")
 
         # Evaluate the population
         pool_args = [[p, input_count, args.input_nodes, args.hidden_nodes, output_node_count] for p in population]
@@ -126,22 +123,20 @@ if __name__ == '__main__':
         max_fitnesses.append(max(fitnesses))
         avg_fitnesses.append(sum(fitnesses) / len(fitnesses))
 
-        print("Generation: {}".format(gen), end=" ")
-
         # Calculate duplicates
         duplicates = copy.deepcopy(population)
         duplicates.sort()
 
         # Track Number of Clones in Population
-        num_clones.append(pop_size - len(list(k for k, _ in itertools.groupby(duplicates))))
+        # num_clones.append(pop_size - len(list(k for k, _ in itertools.groupby(duplicates))))
 
-        print("\tNumber of Clones in Population: {}".format(num_clones[-1]))
+        # print("\tNumber of Clones in Population: {}".format(num_clones[-1]))
 
         new_pop = []
 
         # Elitism
         if elitism:
-            print("Keeping Elite Individual")
+            # print("Keeping Elite Individual")
             new_pop.append(copy.deepcopy(population[fitnesses.index(max(fitnesses))]))
 
         for _ in range(pop_size - len(new_pop)):
@@ -170,5 +165,4 @@ if __name__ == '__main__':
     print()
     print("max_fit = " + str(max(max_fitnesses)))
     print("avg_fit = " + str(np.average(avg_fitnesses)))
-    print("num_clones = " + str(num_clones))
     print("max_score = " + str(max_score))

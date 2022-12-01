@@ -30,8 +30,8 @@ class SnakeGame:
         if check_errors[1] > 0:
             print(f'[!] Had {check_errors[1]} errors when initialising game, exiting...')
             sys.exit(-1)
-        else:
-            print('[+] Game successfully initialised')
+        # else:
+        #     print('[+] Game successfully initialised')
         
         # Colors (R, G, B)
         self.black = pygame.Color(0, 0, 0)
