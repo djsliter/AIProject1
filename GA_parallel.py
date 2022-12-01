@@ -117,6 +117,13 @@ if __name__ == '__main__':
                     f.write(str(p) + '\n')
                 f.write(str(fitnesses) + '\n')
             f.close()
+        if ((gen_count - 1) - gen == 0):
+            with open('generations\\lastGen.txt', 'w') as f:
+                f.write(str(pop_size) + '\n')
+                for p in population:
+                    f.write(str(p) + '\n')
+                f.write(str(fitnesses) + '\n')
+            f.close()
 
         gen_count += 1
         # Track fitnesses
