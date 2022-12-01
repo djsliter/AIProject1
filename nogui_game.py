@@ -126,26 +126,26 @@ class SnakeGame:
             # Game Over conditions -----------------------------------------------
             if self.total_ticks > self.last_eat_time + 10000:
                 self.game_over()
-                print('total_ticks ' + str(self.total_ticks))
-                print('score ' + str(self.score))
+                # print('total_ticks ' + str(self.total_ticks))
+                # print('score ' + str(self.score))
                 break
             # Getting out of bounds
             if self.snake_pos[0] < 0 or self.snake_pos[0] > self.frame_size_x-10:
                 self.game_over()
-                print('total_ticks ' + str(self.total_ticks))
-                print('score ' + str(self.score))
+                # print('total_ticks ' + str(self.total_ticks))
+                # print('score ' + str(self.score))
                 break
             if self.snake_pos[1] < 0 or self.snake_pos[1] > self.frame_size_y-10:
                 self.game_over()
-                print('total_ticks ' + str(self.total_ticks))
-                print('score ' + str(self.score))
+                # print('total_ticks ' + str(self.total_ticks))
+                # print('score ' + str(self.score))
                 break
             # Touching the snake body
             for block in self.snake_body[1:]:
                 if self.snake_pos[0] == block[0] and self.snake_pos[1] == block[1]:
                     self.game_over()
-                    print('total_ticks ' + str(self.total_ticks))
-                    print('score ' + str(self.score))
+                    # print('total_ticks ' + str(self.total_ticks))
+                    # print('score ' + str(self.score))
                     break
             # Refresh rate
             self.fps_controller.tick(self.difficulty)
