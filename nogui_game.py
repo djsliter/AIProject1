@@ -29,11 +29,7 @@ class SnakeGame:
         self.hidden_node_count = hidden_node_count
         self.output_node_count = output_node_count
         # Difficulty settings
-        # Easy      ->  10
-        # Medium    ->  25
-        # Hard      ->  40
-        # Harder    ->  60
-        # Impossible->  120
+        # Easy      ->  10, Medium    ->  25, Hard      ->  40, Harder    ->  60, Impossible->  120
         self.difficulty = difficulty
         self.genome = genome
         # Window size
@@ -44,20 +40,9 @@ class SnakeGame:
         # Checks for errors encountered
         check_errors = pygame.init()
         # pygame.init() example output -> (6, 0)
-        # second number in tuple gives number of errors
         if check_errors[1] > 0:
             print(f'[!] Had {check_errors[1]} errors when initialising game, exiting...')
             sys.exit(-1)
-        # else:
-        #     print('[+] Game successfully initialised')
-        
-        # Colors (R, G, B)
-        self.black = pygame.Color(0, 0, 0)
-        self.white = pygame.Color(255, 255, 255)
-        self.red = pygame.Color(255, 0, 0)
-        self.green = pygame.Color(0, 255, 0)
-        self.blue = pygame.Color(0, 0, 255)
-        self.magenta = pygame.Color(255, 0, 255)
 
         # FPS (frames per second) controller
         self.fps_controller = pygame.time.Clock()
@@ -244,26 +229,18 @@ class SnakeGame:
             # Game Over conditions -----------------------------------------------
             if self.total_ticks > self.last_eat_time + 100000:
                 self.game_over()
-                # print('total_ticks ' + str(self.total_ticks))
-                # print('score ' + str(self.score))
                 break
             # Getting out of bounds
             if self.snake_pos[0] < 0 or self.snake_pos[0] > self.frame_size_x - 10:
                 self.game_over()
-                # print('total_ticks ' + str(self.total_ticks))
-                # print('score ' + str(self.score))
                 break
             if self.snake_pos[1] < 0 or self.snake_pos[1] > self.frame_size_y - 10:
                 self.game_over()
-                # print('total_ticks ' + str(self.total_ticks))
-                # print('score ' + str(self.score))
                 break
             # Touching the snake body
             for block in self.snake_body[1:]:
                 if self.snake_pos[0] == block[0] and self.snake_pos[1] == block[1]:
                     self.game_over()
-                    # print('total_ticks ' + str(self.total_ticks))
-                    # print('score ' + str(self.score))
                     break
 
             # Refresh rate
