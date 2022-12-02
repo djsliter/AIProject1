@@ -22,8 +22,10 @@ def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_ou
 
     time_score = (game1.total_ticks/10)  # use time in seconds as survival
 
-    print('Foodscore: ' + str(game1.score) + ' Fitness: ' + str(food_score + time_score))
-    return food_score + time_score
+    death_score = (math.sqrt(math.pow((game1.snake_pos[0]-game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1]-game1.food_pos[1]), 2)) / 400) * 1000
+
+    print('Foodscore: ' + str(game1.score) + ' Fitness: ' + str(food_score + time_score + death_score))
+    return food_score + time_score + death_score
 
 
 def tournament_selection(sample):
