@@ -20,13 +20,10 @@ def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_ou
     #time_score = game1.total_ticks  # use time in seconds as survival
     food_score = math.sqrt(math.pow(game1.score, 3)) * 600  # weigh picking up more food heavily
 
-    time_score = int(game1.total_ticks/2)  # use time in seconds as survival
-    avg_time_to_food = time_score
-    if food_score > 0:
-        avg_time_to_food = time_score/game1.score
+    time_score = (game1.total_ticks/10)  # use time in seconds as survival
 
-    print(food_score + time_score - int(0.7*avg_time_to_food))
-    return food_score + time_score - int(0.7*avg_time_to_food)
+    print(food_score + time_score)
+    return food_score + time_score
 
 
 def tournament_selection(sample):

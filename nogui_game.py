@@ -51,7 +51,7 @@ class SnakeGame:
         self.food_pos = [random.randrange(1, (self.frame_size_x//10)) * 10, random.randrange(1, (self.frame_size_y//10)) * 10]
         self.food_spawn = True
 
-        self.direction = 'DOWN'
+        self.direction = 'RIGHT'
         self.change_to = self.direction
 
         self.score = 0
@@ -71,22 +71,61 @@ class SnakeGame:
         self.last_eat_time = 0
         # Main logic
         while True:
-            distance_from_head_x_to_food_x = self.snake_pos[0] - self.food_pos[0] # math.sqrt(math.pow((self.snake_pos[0] - self.food_pos[0]), 2))
-            distance_from_head_y_to_food_y = self.snake_pos[1] - self.food_pos[1] # math.sqrt(math.pow((self.snake_pos[1] - self.food_pos[1]), 2))
-            distance_from_head_x_to_tail_x = self.snake_pos[0] - self.snake_body[len(self.snake_body) - 1][0]
-            distance_from_head_y_to_tail_y = self.snake_pos[1] - self.snake_body[len(self.snake_body) - 1][1]
+            distance_from_head_x_to_food_x = (self.snake_pos[0] - self.food_pos[0]) / self.frame_size_x # math.sqrt(math.pow((self.snake_pos[0] - self.food_pos[0]), 2))
+            distance_from_head_y_to_food_y = (self.snake_pos[1] - self.food_pos[1]) / self.frame_size_y # math.sqrt(math.pow((self.snake_pos[1] - self.food_pos[1]), 2))
+            distance_from_head_x_to_tail_x = (self.snake_pos[0] - self.snake_body[len(self.snake_body) - 1][0])/ self.frame_size_x
+            distance_from_head_y_to_tail_y = (self.snake_pos[1] - self.snake_body[len(self.snake_body) - 1][1])/ self.frame_size_y
+            direction_x = 0
+            direction_y = 0
+            left_safe = 0
+            right_safe = 0
+            down_safe = 0
+            up_safe = 0
+            if self.direction == 'UP':
+                direction_x = 0
+                direction_y = -1
+            if self.direction == 'DOWN':
+                direction_x = 0
+                direction_y = 1
+            if self.direction == 'LEFT':
+                direction_x = -1
+                direction_y = 0
+            if self.direction == 'RIGHT':
+                direction_x = 1
+                direction_y = 0
+
+            up_pos = self.snake_pos[1] - 10
+            if up_pos < 0 or [self.snake_pos[0], up_pos] in self.snake_body:
+                up_safe = -1
+            else:
+                up_safe = 1
+            right_pos = self.snake_pos[0] + 10
+            if right_pos > self.frame_size_y or [right_pos, self.snake_pos[1]] in self.snake_body:
+                right_safe = -1
+            else:
+                right_safe = 1
+            left_pos = self.snake_pos[0] - 10
+            if left_pos < 0 or [left_pos, self.snake_pos[1]] in self.snake_body:
+                left_safe = -1
+            else:
+                left_safe = 1
+            down_pos = self.snake_pos[1] + 10
+            if down_pos > self.frame_size_y or [self.snake_pos[0], down_pos] in self.snake_body:
+                down_safe = -1
+            else:
+                down_safe = 1
 
             # Neural net makes a choice
-            choice = neural_net.runModel(np.array([[distance_from_head_x_to_food_x, distance_from_head_y_to_food_y, distance_from_head_x_to_tail_x, distance_from_head_y_to_tail_y, self.last_choice]], dtype=np.float32))
+            choice = neural_net.runModel(np.array([[distance_from_head_x_to_food_x, distance_from_head_y_to_food_y, distance_from_head_x_to_tail_x, distance_from_head_y_to_tail_y, self.last_choice, direction_x, direction_y, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
             self.last_choice = choice
             # Based on choice, set direction to change to
-            if choice == 0:
+            if choice == 0 and self.direction != 'DOWN':
                 self.change_to = 'UP'
-            if choice == 1:
+            if choice == 1 and self.direction != 'LEFT':
                 self.change_to = 'RIGHT'
-            if choice == 2:
+            if choice == 2 and self.direction != 'UP':
                 self.change_to = 'DOWN'
-            if choice == 3:
+            if choice == 3 and self.direction != 'RIGHT':
                 self.change_to = 'LEFT'
             # Making sure the snake cannot move in the opposite self.direction instantaneously
             if self.change_to == 'UP' and self.direction != 'DOWN':
@@ -124,7 +163,7 @@ class SnakeGame:
 
             
             # Game Over conditions -----------------------------------------------
-            if self.total_ticks > self.last_eat_time + 10000:
+            if self.total_ticks > self.last_eat_time + 100000:
                 self.game_over()
                 # print('total_ticks ' + str(self.total_ticks))
                 # print('score ' + str(self.score))
