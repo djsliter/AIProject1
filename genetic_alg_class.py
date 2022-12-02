@@ -16,20 +16,33 @@ import nogui_game
 def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes):
     game1 = nogui_game.SnakeGame(120, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
     game1.runGame()
+    game2 = nogui_game.SnakeGame(120, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
+    game2.runGame()
+    game3 = nogui_game.SnakeGame(120, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
+    game3.runGame()
 
     """ Calculate the fitness of an individual. """
 
     #food_score = game1.score * 1000  # weigh picking up more food heavily
     #time_score = game1.total_ticks  # use time in seconds as survival
-    food_score = math.sqrt(math.pow(game1.score, 3)) * 1400  # weigh picking up more food heavily
+    food_score1 = math.sqrt(math.pow(game1.score, 3)) * 2000  # weigh picking up more food heavily
+    time_score1 = (game1.total_ticks/10)  # use time in seconds as survival
+    food_score2 = math.sqrt(math.pow(game2.score, 3)) * 2000  # weigh picking up more food heavily
+    time_score2 = (game2.total_ticks/10)  # use time in seconds as survival
+    food_score3 = math.sqrt(math.pow(game3.score, 3)) * 2000  # weigh picking up more food heavily
+    time_score3 = (game3.total_ticks/10)  # use time in seconds as survival
+    dist_to_food1 = math.sqrt(math.pow((game1.snake_pos[0]-game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1]-game1.food_pos[1]), 2))
+    death_score1 = (dist_to_food1 / 2) * 5
+    dist_to_food2 = math.sqrt(math.pow((game2.snake_pos[0]-game2.food_pos[0]), 2) + math.pow((game2.snake_pos[1]-game2.food_pos[1]), 2))
+    death_score2 = (dist_to_food2 / 2) * 5
+    dist_to_food3 = math.sqrt(math.pow((game3.snake_pos[0]-game3.food_pos[0]), 2) + math.pow((game3.snake_pos[1]-game3.food_pos[1]), 2))
+    death_score3 = (dist_to_food3 / 2) * 5
 
-    time_score = (game1.total_ticks/10)  # use time in seconds as survival
-    
-    dist_to_food = math.sqrt(math.pow((game1.snake_pos[0]-game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1]-game1.food_pos[1]), 2))
-    death_score = (dist_to_food / 2) * 5
-
-    print('Foodscore: ' + str(game1.score) + ' Fitness: ' + str(food_score + time_score + death_score))
-    return food_score + time_score + death_score
+    avg_food_score = (food_score1 + food_score2 + food_score3)/3.0
+    avg_time_score = (time_score1 + time_score2 + time_score3)/3.0
+    avg_death_score = (death_score1 + death_score2 + death_score3)/3.0
+    print('Foodscore: ' + str(avg_food_score) + ' Fitness: ' + str(avg_food_score + avg_time_score + avg_death_score))
+    return avg_food_score + avg_time_score + avg_death_score
 
 
 def tournament_selection(sample):
@@ -101,7 +114,7 @@ population = []
 # Initialize the population.
 if args.start_file == '':
     for i in range(pop_size):
-        population.append([random.uniform(-1.0, 1.0) for _ in range(genome_size)])
+        population.append([random.uniform(-2.0, 2.0) for _ in range(genome_size)])
 else:
     with open(args.start_file, 'r') as f:
         temp = int(f.readline())
@@ -113,11 +126,12 @@ else:
             for x in range(temp):
                 population.append(ast.literal_eval(f.readline()))
             for i in range(pop_size - temp):
-                population.append([random.uniform(-1.0, 1.0) for _ in range(genome_size)])
+                population.append([random.uniform(-2.0, 2.0) for _ in range(genome_size)])
 
 
     f.close()
 
+# print(population)
 if __name__ == '__main__':
     gen_count = 1
     for gen in range(num_gens):
@@ -180,12 +194,18 @@ if __name__ == '__main__':
         # Elitism
         if elitism:
             print("Keeping Elite Individual")
-            new_pop.append(copy.deepcopy(population[fitnesses.index(max(fitnesses))]))
+
+            top_10_idx = numpy.argsort(fitnesses)[-10:]
+            top_10_values = [fitnesses[i] for i in top_10_idx]
+            for v in top_10_values:
+                new_pop.append(copy.deepcopy(population[fitnesses.index(v)]))
+            # new_pop.append(copy.deepcopy(population[fitnesses.index(max(fitnesses))]))
 
         for _ in range(pop_size - len(new_pop)):
+
             # Select two parents.
-            par_1 = copy.deepcopy(tournament_selection(random.sample(population, 16)))
-            par_2 = copy.deepcopy(tournament_selection(random.sample(population, 16)))
+            par_1 = copy.deepcopy(tournament_selection(random.sample(population, 10)))
+            par_2 = copy.deepcopy(tournament_selection(random.sample(population, 10)))
 
             # Perform crossover.
             new_ind = par_1[:]
@@ -197,7 +217,7 @@ if __name__ == '__main__':
             new_ind = [i if random.random() > mut_rate else (mutate_slightly(i)) for i in new_ind]
 
             # Mutate the individual.
-            new_ind = [i if random.random() > big_mut_rate else random.uniform(-1.0, 1.0) for i in new_ind]
+            new_ind = [i if random.random() > big_mut_rate else random.uniform(-2.0, 2.0) for i in new_ind]
 
             # disable genes
             new_ind = [i if random.random() > disable_rate else 0 for i in new_ind]

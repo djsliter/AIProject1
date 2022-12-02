@@ -72,12 +72,10 @@ class SnakeGame:
                                       (self.input_node_count, self.hidden_node_count), self.hidden_node_count,
                                       (self.hidden_node_count, self.output_node_count), self.output_node_count)
         neural_net.set_weights_from_genome(self.genome)
-        self.last_choice = 0
+        self.last_choice = 1
         self.last_eat_time = 0
-        last_x_dist_head_to_food = 0
-        last_y_dist_head_to_food = 0
-        normalized_dir_x = 1
-        normalized_dir_y = 0
+        last_choice_x = 1
+        last_choice_y = 0
         # Main logic
         while True:
             up_pos = self.snake_pos[1] - 10
@@ -147,8 +145,7 @@ class SnakeGame:
             else:
                 down_safe = 1
 
-            # last_choice_x = 0
-            # last_choice_y = 0
+
 
             delta_up = dist_current - dist_up
             delta_down = dist_current - dist_down
@@ -157,7 +154,7 @@ class SnakeGame:
 
 
             # Neural net makes a choice
-            choice = neural_net.runModel(np.array([[delta_up, delta_down, delta_left, delta_right, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
+            choice = neural_net.runModel(np.array([[delta_up, delta_down, delta_left, delta_right, str(((self.total_ticks - self.last_eat_time)/100000)), last_choice_x, last_choice_y, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
             # choice = neural_net.runModel(np.array([[distance_from_head_x_to_food_x, distance_from_head_y_to_food_y, delta_x, delta_y, normalized_dir_x, normalized_dir_y, direction_x, direction_y, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
             # last_x_dist_head_to_food = distance_from_head_x_to_food_x
             # last_y_dist_head_to_food = distance_from_head_y_to_food_y
@@ -177,7 +174,7 @@ class SnakeGame:
             if choice == 1:
                 last_choice_x = 1
                 last_choice_y = 0
-                if self.direction != 'LEFT':
+                if self.direction != 'LEFT':# up = 0, right = 1, down = 2, left = 3
                     self.change_to = 'RIGHT'
             if choice == 2:
                 last_choice_x = 0
