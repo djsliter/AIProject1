@@ -1,9 +1,10 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import copy
 import itertools
 import math
+import numpy as np
 import random
-
-import numpy
 import pygame
 import argparse
 import ast
@@ -30,12 +31,18 @@ def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_ou
     time_score2 = (game2.total_ticks/10)  # use time in seconds as survival
     food_score3 = math.sqrt(math.pow(game3.score, 3)) * 2000  # weigh picking up more food heavily
     time_score3 = (game3.total_ticks/10)  # use time in seconds as survival
+    dist_to_food1 = math.sqrt(math.pow((game1.snake_pos[0]-game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1]-game1.food_pos[1]), 2))
+    death_score1 = (dist_to_food1 / 2) * 5
+    dist_to_food2 = math.sqrt(math.pow((game2.snake_pos[0]-game2.food_pos[0]), 2) + math.pow((game2.snake_pos[1]-game2.food_pos[1]), 2))
+    death_score2 = (dist_to_food2 / 2) * 5
+    dist_to_food3 = math.sqrt(math.pow((game3.snake_pos[0]-game3.food_pos[0]), 2) + math.pow((game3.snake_pos[1]-game3.food_pos[1]), 2))
+    death_score3 = (dist_to_food3 / 2) * 5
 
     avg_food_score = (food_score1 + food_score2 + food_score3)/3.0
     avg_time_score = (time_score1 + time_score2 + time_score3)/3.0
-
-    print('Foodscore: ' + str(avg_food_score) + ' Fitness: ' + str(avg_food_score + avg_time_score))
-    return avg_food_score + avg_time_score
+    avg_death_score = (death_score1 + death_score2 + death_score3)/3.0
+    print('Foodscore: ' + str(avg_food_score) + ' Fitness: ' + str(avg_food_score + avg_time_score + avg_death_score))
+    return avg_food_score + avg_time_score + avg_death_score
 
 
 def tournament_selection(sample):
@@ -75,13 +82,13 @@ parser.add_argument('--disable_rate', nargs='?', type=float, default=0.001, help
 parser.add_argument('--save_rate', nargs='?', type=int, default=5, help='Specify how frequently to save the current generation to a file')
 
 args = parser.parse_args()
-print(args.pop)
-print(args.eliteism)
-print(args.gens)
-print(args.mut_rate)
-print(args.cx_rate)
-print(args.hidden_nodes)
-print(args.input_nodes)
+# print(args.pop)
+# print(args.eliteism)
+# print(args.gens)
+# print(args.mut_rate)
+# print(args.cx_rate)
+# print(args.hidden_nodes)
+# print(args.input_nodes)
 
 input_count = args.inputs
 output_node_count = args.output_nodes
@@ -134,7 +141,8 @@ if __name__ == '__main__':
             big_mut_rate = big_mut_rate/4
             disable_rate = disable_rate/3
 
-        print("\n" + "-" * 80 + " ")
+        print("\nGeneration: {}".format(gen), end=" ")
+        print("-" * 80 + " ")
 
         # Evaluate the population
         pool_args = [[p, input_count, args.input_nodes, args.hidden_nodes, output_node_count] for p in population]
@@ -142,6 +150,7 @@ if __name__ == '__main__':
         fitnesses = pool.starmap(fit_func, pool_args)
         pool.close()
         # fitnesses = [fit_func(p, input_count, args.input_nodes, args.hidden_nodes, output_node_count) for p in population]
+
         if (gen_count - 1) % save_rate == 0:
             with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
                 f.write(str(pop_size) + '\n')
@@ -149,17 +158,21 @@ if __name__ == '__main__':
                     f.write(str(p) + '\n')
                 f.write(str(fitnesses) + '\n')
             f.close()
+
+        # If on the last gen, save as lastGen.txt
+        if ((gen_count - 1) - gen == 0):
+            with open('generations\\lastGen.txt', 'w') as f:
+                f.write(str(pop_size) + '\n')
+                for p in population:
+                    f.write(str(p) + '\n')
+                f.write(str(fitnesses) + '\n')
+            f.close()
+
         gen_count += 1
         # Track fitnesses
         max_fitnesses.append(max(fitnesses))
         avg_fitnesses.append(sum(fitnesses) / len(fitnesses))
 
-        print("Generation: {}".format(gen), end=" ")
-        # print("Max Fitness: {}".format(max_fitnesses[-1]))
-        # print("Avg Fitness: {}".format(avg_fitnesses[-1]))
-
-        # Print out the population.
-        # Note: Comment out if you have larger populations as it might be hard to read.
         # print("Population Genomes:")
         # for p in population:
         #     print("\t\t\t", p)
@@ -176,19 +189,15 @@ if __name__ == '__main__':
         # for clone in list(k for k, _ in itertools.groupby(duplicates)):
         #     print("\t\t\t\t", clone)
 
-        # Early Exit
-        # if max(fitnesses) == genome_size:
-        # 	break
-
         new_pop = []
 
         # Elitism
         if elitism:
             print("Keeping Elite Individual")
 
-            top_2_idx = numpy.argsort(fitnesses)[-10:]
-            top_2_values = [fitnesses[i] for i in top_2_idx]
-            for v in top_2_values:
+            top_10_idx = numpy.argsort(fitnesses)[-10:]
+            top_10_values = [fitnesses[i] for i in top_10_idx]
+            for v in top_10_values:
                 new_pop.append(copy.deepcopy(population[fitnesses.index(v)]))
             # new_pop.append(copy.deepcopy(population[fitnesses.index(max(fitnesses))]))
 
@@ -225,7 +234,7 @@ if __name__ == '__main__':
 
     # Print out final tracking information.
     print()
-    print("gens = " + str([g for g in range(num_gens)]))
-    print("max_fit = " + str(max_fitnesses))
-    print("avg_fit = " + str(avg_fitnesses))
+    print("gens = " + str(num_gens))
+    print("max_fit = " + str(max(max_fitnesses)))
+    print("avg_fit = " + str(np.average(avg_fitnesses)))
     print("num_clones = " + str(num_clones))
