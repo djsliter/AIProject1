@@ -95,81 +95,87 @@ class SnakeGame:
         normalized_dir_y = 0
         # Main logic
         while True:
-            temp_x = ((self.snake_pos[0] - self.food_pos[
-                0]) / self.frame_size_x)
-            temp_y = ((self.snake_pos[1] - self.food_pos[
-                1]) / self.frame_size_y)
-            if temp_x >= 0:
-                distance_from_head_x_to_food_x = 1.0 - temp_x  # math.sqrt(math.pow((self.snake_pos[0] - self.food_pos[0]), 2))
-            else:
-                distance_from_head_x_to_food_x = 1.0 + temp_x
-            if temp_y >= 0:
-                distance_from_head_y_to_food_y = 1.0 - temp_y  # math.sqrt(math.pow((self.snake_pos[1] - self.food_pos[1]), 2))
-            else:
-                distance_from_head_y_to_food_y = 1.0 + temp_y
-            direction_x = 0
-            direction_y = 0
+            up_pos = self.snake_pos[1] - 10
+            down_pos = self.snake_pos[1] + 10
+            left_pos = self.snake_pos[0] - 10
+            right_pos = self.snake_pos[0] + 10
+
+            dist_current = calcDistFromPoints(self.snake_pos, self.food_pos)
+            dist_up = calcDistFromPoints([self.snake_pos[0], up_pos], self.food_pos)
+            dist_down = calcDistFromPoints([self.snake_pos[0], down_pos], self.food_pos)
+            dist_left = calcDistFromPoints([left_pos, self.snake_pos[1]], self.food_pos)
+            dist_right = calcDistFromPoints([right_pos, self.snake_pos[1]], self.food_pos)
+
+            # temp_x = ((self.snake_pos[0] - self.food_pos[
+            #     0]) / self.frame_size_x)
+            # temp_y = ((self.snake_pos[1] - self.food_pos[
+            #     1]) / self.frame_size_y)
+            # if temp_x >= 0:
+            #     distance_from_head_x_to_food_x = 1.0 - temp_x  # math.sqrt(math.pow((self.snake_pos[0] - self.food_pos[0]), 2))
+            # else:
+            #     distance_from_head_x_to_food_x = 1.0 + temp_x
+            # if temp_y >= 0:
+            #     distance_from_head_y_to_food_y = 1.0 - temp_y  # math.sqrt(math.pow((self.snake_pos[1] - self.food_pos[1]), 2))
+            # else:
+            #     distance_from_head_y_to_food_y = 1.0 + temp_y
+            # direction_x = 0
+            # direction_y = 0
             left_safe = 0
             right_safe = 0
             down_safe = 0
             up_safe = 0
-            delta_x = 0
-            delta_y = 0
-            delta_x_left = 0
-            delta_y_left = 0
-            delta_x_right = 0
-            delta_y_right = 0
-            delta_x_up = 0
-            delta_y_up = 0
+            # delta_x = 0
+            # delta_y = 0
+            #
+            #
+            # if last_x_dist_head_to_food != 0:
+            #     delta_x = math.fabs(distance_from_head_x_to_food_x) - math.fabs(last_x_dist_head_to_food)
+            # if last_y_dist_head_to_food != 0:
+            #     delta_y = math.fabs(distance_from_head_y_to_food_y) - math.fabs(last_y_dist_head_to_food)
+            # if self.direction == 'UP':
+            #     direction_x = 0
+            #     direction_y = -1
+            # if self.direction == 'DOWN':
+            #     direction_x = 0
+            #     direction_y = 1
+            # if self.direction == 'LEFT':
+            #     direction_x = -1
+            #     direction_y = 0
+            # if self.direction == 'RIGHT':
+            #     direction_x = 1
+            #     direction_y = 0
 
-            if last_x_dist_head_to_food != 0:
-                delta_x = math.fabs(distance_from_head_x_to_food_x) - math.fabs(last_x_dist_head_to_food)
-            if last_y_dist_head_to_food != 0:
-                delta_y = math.fabs(distance_from_head_y_to_food_y) - math.fabs(last_y_dist_head_to_food)
-            if self.direction == 'UP':
-                direction_x = 0
-                direction_y = -1
-            if self.direction == 'DOWN':
-                direction_x = 0
-                direction_y = 1
-            if self.direction == 'LEFT':
-                direction_x = -1
-                direction_y = 0
-            if self.direction == 'RIGHT':
-                direction_x = 1
-                direction_y = 0
-
-            up_pos = self.snake_pos[1] - 10
             if up_pos <= 0 or [self.snake_pos[0], up_pos] in self.snake_body:
                 up_safe = -1
             else:
                 up_safe = 1
-            right_pos = self.snake_pos[0] + 10
             if right_pos >= self.frame_size_y or [right_pos, self.snake_pos[1]] in self.snake_body:
                 right_safe = -1
             else:
                 right_safe = 1
-            left_pos = self.snake_pos[0] - 10
             if left_pos <= 0 or [left_pos, self.snake_pos[1]] in self.snake_body:
                 left_safe = -1
             else:
                 left_safe = 1
-            down_pos = self.snake_pos[1] + 10
             if down_pos >= self.frame_size_y or [self.snake_pos[0], down_pos] in self.snake_body:
                 down_safe = -1
             else:
                 down_safe = 1
 
-            last_choice_x = 0
-            last_choice_y = 0
+            # last_choice_x = 0
+            # last_choice_y = 0
+
+            delta_up = dist_current - dist_up
+            delta_down = dist_current - dist_down
+            delta_left = dist_current - dist_left
+            delta_right = dist_current - dist_right
+
 
             # Neural net makes a choice
-            choice = neural_net.runModel(np.array([[distance_from_head_x_to_food_x, distance_from_head_y_to_food_y,
-                                                    delta_x, delta_y, up_safe, down_safe, left_safe, right_safe]],
-                                                  dtype=np.float32))
+            choice = neural_net.runModel(np.array([[delta_up, delta_down, delta_left, delta_right, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
             # choice = neural_net.runModel(np.array([[distance_from_head_x_to_food_x, distance_from_head_y_to_food_y, delta_x, delta_y, normalized_dir_x, normalized_dir_y, direction_x, direction_y, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
-            last_x_dist_head_to_food = distance_from_head_x_to_food_x
-            last_y_dist_head_to_food = distance_from_head_y_to_food_y
+            # last_x_dist_head_to_food = distance_from_head_x_to_food_x
+            # last_y_dist_head_to_food = distance_from_head_y_to_food_y
             # print(str(distance_from_head_x_to_food_x) + ',' + str(distance_from_head_y_to_food_y) + ',' + str(delta_x) + ',' + str(delta_y) + ',' + str(
             #     normalized_dir_x) + ',' + str(normalized_dir_y) + ',' + str(direction_x) + ',' + str(direction_y) + ',' + str(up_safe) + ',' + str(
             #     down_safe) + ',' + str(left_safe) + ',' + str(right_safe) + ',' + str(choice))
