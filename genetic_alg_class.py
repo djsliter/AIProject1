@@ -45,8 +45,8 @@ def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_ou
     return avg_food_score + avg_time_score + avg_death_score
 
 
-def tournament_selection(sample):
-    scores = [sum(ind) for ind in sample]
+def tournament_selection(sample, fitnesses, population):
+    scores = [fitnesses[population.index(ind)] for ind in sample]
     return sample[scores.index(max(scores))]
 
 
@@ -117,7 +117,9 @@ if args.start_file == '':
         population.append([random.uniform(-2.0, 2.0) for _ in range(genome_size)])
 else:
     with open(args.start_file, 'r') as f:
+        print(args.start_file)
         temp = int(f.readline())
+        print(temp)
         if pop_size <= temp:
             pop_size = temp
             for x in range(0, pop_size):
@@ -195,7 +197,7 @@ if __name__ == '__main__':
         if elitism:
             print("Keeping Elite Individual")
 
-            top_10_idx = numpy.argsort(fitnesses)[-10:]
+            top_10_idx = np.argsort(fitnesses)[-10:]
             top_10_values = [fitnesses[i] for i in top_10_idx]
             for v in top_10_values:
                 new_pop.append(copy.deepcopy(population[fitnesses.index(v)]))
@@ -204,8 +206,8 @@ if __name__ == '__main__':
         for _ in range(pop_size - len(new_pop)):
 
             # Select two parents.
-            par_1 = copy.deepcopy(tournament_selection(random.sample(population, 10)))
-            par_2 = copy.deepcopy(tournament_selection(random.sample(population, 10)))
+            par_1 = copy.deepcopy(tournament_selection(random.sample(population, 8), fitnesses, population))
+            par_2 = copy.deepcopy(tournament_selection(random.sample(population, 8), fitnesses, population))
 
             # Perform crossover.
             new_ind = par_1[:]
