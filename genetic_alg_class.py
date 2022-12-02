@@ -18,11 +18,11 @@ def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_ou
 
     #food_score = game1.score * 1000  # weigh picking up more food heavily
     #time_score = game1.total_ticks  # use time in seconds as survival
-    food_score = math.sqrt(math.pow(game1.score, 3)) * 600  # weigh picking up more food heavily
+    food_score = math.sqrt(math.pow(game1.score, 3)) * 1400  # weigh picking up more food heavily
 
     time_score = (game1.total_ticks/10)  # use time in seconds as survival
 
-    print(food_score + time_score)
+    print('Foodscore: ' + str(game1.score) + ' Fitness: ' + str(food_score + time_score))
     return food_score + time_score
 
 
@@ -116,6 +116,11 @@ else:
 if __name__ == '__main__':
     gen_count = 1
     for gen in range(num_gens):
+        if gen_count == 150:
+            mut_rate = mut_rate/3
+            cx_rate = cx_rate*0.9
+            big_mut_rate = big_mut_rate/4
+            disable_rate = disable_rate/3
 
         print("\n" + "-" * 80 + " ")
 
@@ -173,8 +178,8 @@ if __name__ == '__main__':
         for _ in range(pop_size - len(new_pop)):
 
             # Select two parents.
-            par_1 = copy.deepcopy(tournament_selection(random.sample(population, 3)))
-            par_2 = copy.deepcopy(tournament_selection(random.sample(population, 3)))
+            par_1 = copy.deepcopy(tournament_selection(random.sample(population, 16)))
+            par_2 = copy.deepcopy(tournament_selection(random.sample(population, 16)))
 
             # Perform crossover.
             new_ind = par_1[:]
