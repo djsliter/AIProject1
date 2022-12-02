@@ -4,6 +4,11 @@ import pygame, sys, time, random
 import neuralnet as nn
 import numpy as np
 
+
+def calcDistFromPoints(snakehead, food):
+    # distance formula (normalized to board size)
+    distance = math.sqrt(math.pow((snakehead[0]-food[0]), 2) + math.pow((snakehead[1]-food[1]), 2)) / 850
+    return distance
 class SnakeGame:
     def __init__(self, difficulty, genome, input_count=5, input_node_count=6, hidden_node_count=10, output_node_count=4, pygame=pygame):
         self.input_count = input_count
@@ -72,52 +77,32 @@ class SnakeGame:
         pygame.display.set_caption('Snake Eater')
         game_window = pygame.display.set_mode((self.frame_size_x, self.frame_size_y))
 
-        print("test")
         self.last_choice = 1
         self.last_eat_time = 0
-        last_x_dist_head_to_food = 0
-        last_y_dist_head_to_food = 0
-        normalized_dir_x = 1
-        normalized_dir_y = 0
+        last_choice_x = 1
+        last_choice_y = 0
         # Main logic
         while True:
-            temp_x = ((self.snake_pos[0] - self.food_pos[
-                0]) / self.frame_size_x)
-            temp_y = ((self.snake_pos[1] - self.food_pos[
-                1]) / self.frame_size_y)
-            if temp_x >= 0:
-                distance_from_head_x_to_food_x = 1.0 - temp_x  # math.sqrt(math.pow((self.snake_pos[0] - self.food_pos[0]), 2))
-            else:
-                distance_from_head_x_to_food_x = 1.0 + temp_x
-            if temp_y >= 0:
-                distance_from_head_y_to_food_y = 1.0 - temp_y  # math.sqrt(math.pow((self.snake_pos[1] - self.food_pos[1]), 2))
-            else:
-                distance_from_head_y_to_food_y = 1.0 + temp_y
-            direction_x = 0
-            direction_y = 0
+            up_pos = self.snake_pos[1] - 10
+            down_pos = self.snake_pos[1] + 10
+            left_pos = self.snake_pos[0] - 10
+            right_pos = self.snake_pos[0] + 10
+
+            dist_current = calcDistFromPoints(self.snake_pos, self.food_pos)
+            dist_up = calcDistFromPoints([self.snake_pos[0], up_pos], self.food_pos)
+            dist_down = calcDistFromPoints([self.snake_pos[0], down_pos], self.food_pos)
+            dist_left = calcDistFromPoints([left_pos, self.snake_pos[1]], self.food_pos)
+            dist_right = calcDistFromPoints([right_pos, self.snake_pos[1]], self.food_pos)
+
             left_safe = 0
             right_safe = 0
             down_safe = 0
             up_safe = 0
-            delta_x = 0
-            delta_y = 0
-            if last_x_dist_head_to_food != 0:
-                delta_x = math.fabs(distance_from_head_x_to_food_x) - math.fabs(last_x_dist_head_to_food)
-            if last_y_dist_head_to_food != 0:
-                delta_y = math.fabs(distance_from_head_y_to_food_y) - math.fabs(last_y_dist_head_to_food)
 
-            if self.direction == 'UP':
-                direction_x = 0
-                direction_y = -1
-            if self.direction == 'DOWN':
-                direction_x = 0
-                direction_y = 1
-            if self.direction == 'LEFT':
-                direction_x = -1
-                direction_y = 0
-            if self.direction == 'RIGHT':
-                direction_x = 1
-                direction_y = 0
+            delta_up = dist_current - dist_up
+            delta_down = dist_current - dist_down
+            delta_left = dist_current - dist_left
+            delta_right = dist_current - dist_right
 
             up_pos = self.snake_pos[1] - 10
             if up_pos <= 0 or [self.snake_pos[0], up_pos] in self.snake_body:
@@ -174,27 +159,26 @@ class SnakeGame:
                 decision = 1
 
             with open('manualsave.csv', 'a') as f:
-                f.write(str(distance_from_head_x_to_food_x) + ',' + str(distance_from_head_y_to_food_y)+ ',' + str(delta_x) + ',' + str(delta_y) + ',' + str(up_safe) + ',' + str(down_safe) + ',' + str(left_safe) + ',' + str(right_safe) + ',' + str(decision) + '\n')
+                f.write(str(delta_up) + ',' + str(delta_down) + ',' + str(delta_left) + ',' + str(delta_right) + ',' + str(((self.total_ticks - self.last_eat_time)/100000)) + ',' + str(last_choice_x) + ',' + str(last_choice_y) + ',' + str(up_safe) + ',' + str(down_safe) + ',' + str(left_safe) + ',' + str(right_safe) + ',' + str(decision) + '\n')
                 # f.write(str(distance_from_head_x_to_food_x) + ',' + str(distance_from_head_y_to_food_y)+ ',' + str(delta_x) + ',' + str(delta_y) + ',' + str(normalized_dir_x) + ',' + str(normalized_dir_y) + ',' + str(direction_x) + ',' + str(direction_y) + ',' + str(up_safe) + ',' + str(down_safe) + ',' + str(left_safe) + ',' + str(right_safe) + ',' + str(decision) + '\n')
             f.close()
-            last_x_dist_head_to_food = distance_from_head_x_to_food_x
-            last_y_dist_head_to_food = distance_from_head_y_to_food_y
+
             if self.change_to == 'UP':
                 self.last_choice = 0
-                normalized_dir_x = 0
-                normalized_dir_y = -1
+                last_choice_x = 0
+                last_choice_y = -1
             if self.change_to == 'DOWN':
                 self.last_choice = 2
-                normalized_dir_x = 0
-                normalized_dir_y = 1
+                last_choice_x = 0
+                last_choice_y = 1
             if self.change_to == 'LEFT':
                 self.last_choice = 3
-                normalized_dir_x = -1
-                normalized_dir_y = 0
+                last_choice_x = -1
+                last_choice_y = 0
             if self.change_to == 'RIGHT':
                 self.last_choice = 1
-                normalized_dir_x = 1
-                normalized_dir_y = 0
+                last_choice_x = 1
+                last_choice_y = 0
 
 
             # Making sure the snake cannot move in the opposite self.direction instantaneously

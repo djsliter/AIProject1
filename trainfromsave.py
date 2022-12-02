@@ -8,12 +8,12 @@ import numpy as np
 
 
 # Set number of nodes for each layer, and dimensionality
-inputs = 8
-in_dim = (8,)
-num_in_nodes = 13
-in_hidden_dim = (13, 18)
-num_hidden_nodes = 18
-hidden_out_dim = (18, 4)
+inputs = 11
+in_dim = (11,)
+num_in_nodes = 11
+in_hidden_dim = (11, 15)
+num_hidden_nodes = 15
+hidden_out_dim = (15, 4)
 num_output_nodes = 4
 
 # load the dataset
@@ -33,7 +33,7 @@ out_layer = model.add(Dense(num_output_nodes, activation="relu", name="Output"))
 # Compiles the model, allows us to call it below
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-model.fit(X, y, epochs=1200, batch_size=20)
+model.fit(X, y, epochs=250, batch_size=10)
 _, accuracy = model.evaluate(X, y)
 print('Accuracy: %.2f' % (accuracy*100))
 
