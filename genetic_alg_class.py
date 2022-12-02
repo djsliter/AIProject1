@@ -3,6 +3,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import copy
 import itertools
 import math
+import numpy as np
 import random
 import pygame
 import argparse
@@ -68,13 +69,13 @@ parser.add_argument('--disable_rate', nargs='?', type=float, default=0.001, help
 parser.add_argument('--save_rate', nargs='?', type=int, default=5, help='Specify how frequently to save the current generation to a file')
 
 args = parser.parse_args()
-print(args.pop)
-print(args.eliteism)
-print(args.gens)
-print(args.mut_rate)
-print(args.cx_rate)
-print(args.hidden_nodes)
-print(args.input_nodes)
+# print(args.pop)
+# print(args.eliteism)
+# print(args.gens)
+# print(args.mut_rate)
+# print(args.cx_rate)
+# print(args.hidden_nodes)
+# print(args.input_nodes)
 
 input_count = args.inputs
 output_node_count = args.output_nodes
@@ -117,7 +118,6 @@ else:
 
     f.close()
 
-# print(population)
 if __name__ == '__main__':
     gen_count = 1
     for gen in range(num_gens):
@@ -127,7 +127,8 @@ if __name__ == '__main__':
             big_mut_rate = big_mut_rate/4
             disable_rate = disable_rate/3
 
-        print("\n" + "-" * 80 + " ")
+        print("\nGeneration: {}".format(gen), end=" ")
+        print("-" * 80 + " ")
 
         # Evaluate the population
         pool_args = [[p, input_count, args.input_nodes, args.hidden_nodes, output_node_count] for p in population]
@@ -135,6 +136,7 @@ if __name__ == '__main__':
         fitnesses = pool.starmap(fit_func, pool_args)
         pool.close()
         # fitnesses = [fit_func(p, input_count, args.input_nodes, args.hidden_nodes, output_node_count) for p in population]
+
         if (gen_count - 1) % save_rate == 0:
             with open('generations\\gen' + str(gen_count) + '.txt', 'w') as f:
                 f.write(str(pop_size) + '\n')
@@ -142,6 +144,7 @@ if __name__ == '__main__':
                     f.write(str(p) + '\n')
                 f.write(str(fitnesses) + '\n')
             f.close()
+
         # If on the last gen, save as lastGen.txt
         if ((gen_count - 1) - gen == 0):
             with open('generations\\lastGen.txt', 'w') as f:
@@ -156,12 +159,6 @@ if __name__ == '__main__':
         max_fitnesses.append(max(fitnesses))
         avg_fitnesses.append(sum(fitnesses) / len(fitnesses))
 
-        print("Generation: {}".format(gen), end=" ")
-        # print("Max Fitness: {}".format(max_fitnesses[-1]))
-        # print("Avg Fitness: {}".format(avg_fitnesses[-1]))
-
-        # Print out the population.
-        # Note: Comment out if you have larger populations as it might be hard to read.
         # print("Population Genomes:")
         # for p in population:
         #     print("\t\t\t", p)
@@ -178,10 +175,6 @@ if __name__ == '__main__':
         # for clone in list(k for k, _ in itertools.groupby(duplicates)):
         #     print("\t\t\t\t", clone)
 
-        # Early Exit
-        # if max(fitnesses) == genome_size:
-        # 	break
-
         new_pop = []
 
         # Elitism
@@ -190,7 +183,6 @@ if __name__ == '__main__':
             new_pop.append(copy.deepcopy(population[fitnesses.index(max(fitnesses))]))
 
         for _ in range(pop_size - len(new_pop)):
-
             # Select two parents.
             par_1 = copy.deepcopy(tournament_selection(random.sample(population, 16)))
             par_2 = copy.deepcopy(tournament_selection(random.sample(population, 16)))
@@ -222,7 +214,7 @@ if __name__ == '__main__':
 
     # Print out final tracking information.
     print()
-    print("gens = " + str([g for g in range(num_gens)]))
-    print("max_fit = " + str(max_fitnesses))
-    print("avg_fit = " + str(avg_fitnesses))
+    print("gens = " + str(num_gens))
+    print("max_fit = " + str(max(max_fitnesses)))
+    print("avg_fit = " + str(np.average(avg_fitnesses)))
     print("num_clones = " + str(num_clones))
