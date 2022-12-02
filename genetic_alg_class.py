@@ -23,8 +23,9 @@ def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_ou
     food_score = math.sqrt(math.pow(game1.score, 3)) * 1400  # weigh picking up more food heavily
 
     time_score = (game1.total_ticks/10)  # use time in seconds as survival
-
-    death_score = (math.sqrt(math.pow((game1.snake_pos[0]-game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1]-game1.food_pos[1]), 2)) / 400) * 1000
+    
+    dist_to_food = math.sqrt(math.pow((game1.snake_pos[0]-game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1]-game1.food_pos[1]), 2))
+    death_score = (dist_to_food / 2) * 5
 
     print('Foodscore: ' + str(game1.score) + ' Fitness: ' + str(food_score + time_score + death_score))
     return food_score + time_score + death_score
@@ -149,7 +150,7 @@ if __name__ == '__main__':
                     f.write(str(p) + '\n')
                 f.write(str(fitnesses) + '\n')
             f.close()
-            
+
         gen_count += 1
         # Track fitnesses
         max_fitnesses.append(max(fitnesses))
