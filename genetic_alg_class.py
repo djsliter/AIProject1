@@ -32,11 +32,11 @@ def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_ou
     food_score3 = math.sqrt(math.pow(game3.score, 3)) * 2000  # weigh picking up more food heavily
     time_score3 = (game3.total_ticks/10)  # use time in seconds as survival
     dist_to_food1 = math.sqrt(math.pow((game1.snake_pos[0]-game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1]-game1.food_pos[1]), 2))
-    death_score1 = (dist_to_food1 / 2) * 5
+    death_score1 = (1/dist_to_food1) * 100000
     dist_to_food2 = math.sqrt(math.pow((game2.snake_pos[0]-game2.food_pos[0]), 2) + math.pow((game2.snake_pos[1]-game2.food_pos[1]), 2))
-    death_score2 = (dist_to_food2 / 2) * 5
+    death_score2 = (1/dist_to_food2) * 100000
     dist_to_food3 = math.sqrt(math.pow((game3.snake_pos[0]-game3.food_pos[0]), 2) + math.pow((game3.snake_pos[1]-game3.food_pos[1]), 2))
-    death_score3 = (dist_to_food3 / 2) * 5
+    death_score3 = (1/dist_to_food3) * 100000
 
     avg_food_score = (food_score1 + food_score2 + food_score3)/3.0
     avg_time_score = (time_score1 + time_score2 + time_score3)/3.0
