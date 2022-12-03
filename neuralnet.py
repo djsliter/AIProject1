@@ -7,16 +7,12 @@ import numpy as np
 
 
 class NeuralNetwork:
-    def __init__(self, in_dim, num_in_nodes, in_hidden_dim, num_hidden_nodes, hidden_dim2, num_hidden_nodes2, hidden_dim3, num_hidden_nodes3, hidden_out_dim, num_output_nodes):
+    def __init__(self, in_dim, num_in_nodes, in_hidden_dim, num_hidden_nodes, hidden_out_dim, num_output_nodes):
         # Set number of nodes for each layer, and dimensionality
         self.in_dim = in_dim
         self.num_in_nodes = num_in_nodes
         self.in_hidden_dim = in_hidden_dim
         self.num_hidden_nodes = num_hidden_nodes
-        self.hidden_dim2 = (num_hidden_nodes, num_hidden_nodes2)
-        self.num_hidden_nodes2 = num_hidden_nodes2
-        self.hidden_dim3 = (num_hidden_nodes2, num_hidden_nodes3)
-        self.num_hidden_nodes3 = num_hidden_nodes3
         self.hidden_out_dim = hidden_out_dim
         self.num_output_nodes = num_output_nodes
         self.genes_populated=0
@@ -27,8 +23,6 @@ class NeuralNetwork:
         # Add layers to the model
         self.input_layer = self.model.add(Dense(num_in_nodes, input_shape=in_dim, activation="relu", name="Input"))
         self.hidden_layer = self.model.add(Dense(num_hidden_nodes, activation="relu", name="Hidden"))
-        self.hidden_layer2 = self.model.add(Dense(num_hidden_nodes2, activation="relu", name="Hidden2"))
-        self.hidden_layer3 = self.model.add(Dense(num_hidden_nodes3, activation="relu", name="Hidden3"))
         self.out_layer = self.model.add(Dense(num_output_nodes, activation="relu", name="Output"))
 
         # Compiles the model, allows us to call it below
@@ -62,14 +56,8 @@ class NeuralNetwork:
             np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_hidden_nodes)]
                       for _ in range(0, self.num_in_nodes)], dtype=np.float32),
             np.array([0.0 for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
-            np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_hidden_nodes2)]
-                      for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
-            np.array([0.0 for _ in range(0, self.num_hidden_nodes2)], dtype=np.float32),
-            np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_hidden_nodes3)]
-                 for _ in range(0, self.num_hidden_nodes2)], dtype=np.float32),
-            np.array([0.0 for _ in range(0, self.num_hidden_nodes3)], dtype=np.float32),
             np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_output_nodes)]
-                      for _ in range(0, self.num_hidden_nodes3)], dtype=np.float32),
+                      for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
             np.array([0.0 for _ in range(0, self.num_output_nodes)], dtype=np.float32)
         ]
         # Need to build the shape of wts above from provided genome
@@ -78,9 +66,9 @@ class NeuralNetwork:
         # Runs data through model as a function
     def runModel(self, data):
         # Normalize input data to reduce magnitude differences
-        # normalized_data = keras.layers.UnitNormalization()(data)
+        normalized_data = keras.layers.UnitNormalization()(data)
         # Runs our data through the model
-        q = self.model(data)
+        q = self.model(normalized_data)
         # Sets action to the output node index with highest value
         action = np.argmax(q)
         # print("ACTION VALUE: ", q[0][action], "\nACTION: ", action)

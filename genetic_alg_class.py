@@ -1,5 +1,4 @@
 import os
-
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import copy
 import itertools
@@ -33,12 +32,12 @@ def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_ou
     food_score3 = math.sqrt(math.pow(game3.score, 3)) * 3000  # weigh picking up more food heavily
     time_score3 = (game3.total_ticks/10)  # use time in seconds as survival
     dist_to_food1 = math.sqrt(math.pow((game1.snake_pos[0]-game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1]-game1.food_pos[1]), 2))
-    death_score1 = (1/dist_to_food1) * 2500
+    death_score1 = (1/dist_to_food1) * 10000
     dist_to_food2 = math.sqrt(math.pow((game2.snake_pos[0]-game2.food_pos[0]), 2) + math.pow((game2.snake_pos[1]-game2.food_pos[1]), 2))
-    death_score2 = (1/dist_to_food2 / 2) * 2500
+    death_score2 = (1/dist_to_food2) * 10000
     dist_to_food3 = math.sqrt(math.pow((game3.snake_pos[0]-game3.food_pos[0]), 2) + math.pow((game3.snake_pos[1]-game3.food_pos[1]), 2))
-    death_score3 = (1/dist_to_food3 / 2) * 2500
-    delta_d_score1 = (game1.delta_sum/game1.total_ticks) * 2500000
+    death_score3 = (1/dist_to_food3) * 10000
+
     avg_food_score = (food_score1 + food_score2 + food_score3)/3.0
     avg_time_score = (time_score1 + time_score2 + time_score3)/3.0
     avg_death_score = (death_score1 + death_score2 + death_score3)/3.0
@@ -95,11 +94,9 @@ input_count = args.inputs
 output_node_count = args.output_nodes
 input_node_count = args.input_nodes
 hidden_node_count = args.hidden_nodes
-hidden_node2_count = 12
-hidden_node3_count = 8
 
 pop_size = args.pop
-genome_size = input_count * input_node_count + input_node_count * hidden_node_count + hidden_node_count * hidden_node2_count + hidden_node2_count*hidden_node3_count + hidden_node3_count * output_node_count
+genome_size = input_count * args.input_nodes + args.input_nodes * args.hidden_nodes + args.hidden_nodes * output_node_count
 num_gens = args.gens
 
 elitism = args.eliteism
@@ -236,18 +233,6 @@ if __name__ == '__main__':
                             increment_counter += 1
                         gene_indeces.append(temp_lst)
                     for a in range(0, hidden_node_count):
-                        temp_lst = []
-                        for b in range(0, hidden_node2_count):
-                            temp_lst.append(increment_counter)
-                            increment_counter += 1
-                        gene_indeces.append(temp_lst)
-                    for a in range(0, hidden_node2_count):
-                        temp_lst = []
-                        for b in range(0, hidden_node3_count):
-                            temp_lst.append(increment_counter)
-                            increment_counter += 1
-                        gene_indeces.append(temp_lst)
-                    for a in range(0, hidden_node3_count):
                         temp_lst = []
                         for b in range(0, output_node_count):
                             temp_lst.append(increment_counter)
