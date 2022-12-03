@@ -8,12 +8,16 @@ import numpy as np
 
 
 # Set number of nodes for each layer, and dimensionality
-inputs = 11
-in_dim = (11,)
-num_in_nodes = 11
-in_hidden_dim = (11, 15)
-num_hidden_nodes = 15
-hidden_out_dim = (15, 4)
+inputs = 12
+in_dim = (12,)
+num_in_nodes = 12
+in_hidden_dim = (12, 18)
+num_hidden_nodes = 18
+in_hidden_dim_2 = (18, 14)
+num_hidden_nodes_2 = 14
+in_hidden_dim_3 = (14, 8)
+num_hidden_nodes_3 = 8
+hidden_out_dim = (8, 4)
 num_output_nodes = 4
 
 # load the dataset
@@ -27,13 +31,15 @@ model = Sequential()
 
 # Add layers to the model
 input_layer = model.add(Dense(num_in_nodes, input_shape=in_dim, activation="relu", name="Input"))
-hidden_layer = model.add(Dense(num_hidden_nodes, activation="relu", name="Hidden"))
+hidden_layer = model.add(Dense(num_hidden_nodes, activation="relu", name="Hidden1"))
+hidden_layer2 = model.add(Dense(num_hidden_nodes_2, activation="relu", name="Hidden2"))
+hidden_layer3 = model.add(Dense(num_hidden_nodes_3, activation="relu", name="Hidden3"))
 out_layer = model.add(Dense(num_output_nodes, activation="relu", name="Output"))
 
 # Compiles the model, allows us to call it below
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-model.fit(X, y, epochs=250, batch_size=10)
+model.fit(X, y, epochs=1000, batch_size=64)
 _, accuracy = model.evaluate(X, y)
 print('Accuracy: %.2f' % (accuracy*100))
 

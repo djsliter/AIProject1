@@ -1,3 +1,4 @@
+import copy
 import math
 
 import pygame, sys, time, random
@@ -108,7 +109,7 @@ class SnakeGame:
             delta_down = dist_current - dist_down
             delta_left = dist_current - dist_left
             delta_right = dist_current - dist_right
-
+            print(dist_current - dist_up)
 
             if self.direction == 'UP':
                 direction_x = 0
@@ -147,14 +148,45 @@ class SnakeGame:
             last_choice_x = 0
             last_choice_y = 0
 
+            x_dif = math.fabs(self.snake_pos[0] - self.food_pos[0])
+            y_dif = math.fabs(self.snake_pos[1] - self.food_pos[1])
+            new_pos = copy.deepcopy(self.snake_pos)
+
+            body_in_way = 0
+            loops = 0
+            while (x_dif > 0 or y_dif > 0) and loops < 4:
+                if new_pos[0] < self.food_pos[0]:
+                    new_pos[0] += 10
+                    if new_pos in self.snake_body:
+                        body_in_way = 1
+                        break
+                elif new_pos[0] > self.food_pos[0]:
+                    new_pos[0] -= 10
+                    if new_pos in self.snake_body:
+                        body_in_way = 1
+                        break
+                if new_pos[1] < self.food_pos[1]:
+                    new_pos[1] += 10
+                    if new_pos in self.snake_body:
+                        body_in_way = 1
+                        break
+                elif new_pos[1] > self.food_pos[1]:
+                    new_pos[1] -= 10
+                    if new_pos in self.snake_body:
+                        body_in_way = 1
+                        break
+                loops += 1
+                x_dif = math.fabs(new_pos[0] - self.food_pos[0])
+                y_dif = math.fabs(new_pos[1] - self.food_pos[1])
+
             # Neural net makes a choice
-            choice = neural_net.runModel(np.array([[delta_up, delta_down, delta_left, delta_right, str(((self.total_ticks - self.last_eat_time)/100000)), last_choice_x, last_choice_y, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
+            choice = neural_net.runModel(np.array([[delta_up, delta_down, delta_left, delta_right, str(((self.total_ticks - self.last_eat_time)/100000)), body_in_way, last_choice_x, last_choice_y, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
             # choice = neural_net.runModel(np.array([[distance_from_head_x_to_food_x, distance_from_head_y_to_food_y, delta_x, delta_y, normalized_dir_x, normalized_dir_y, direction_x, direction_y, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
 
             # print(str(distance_from_head_x_to_food_x) + ',' + str(distance_from_head_y_to_food_y) + ',' + str(delta_x) + ',' + str(delta_y) + ',' + str(
             #     normalized_dir_x) + ',' + str(normalized_dir_y) + ',' + str(direction_x) + ',' + str(direction_y) + ',' + str(up_safe) + ',' + str(
             #     down_safe) + ',' + str(left_safe) + ',' + str(right_safe) + ',' + str(choice))
-            print(str(delta_up) + ',' + str(delta_down) + ',' + str(delta_left) + ',' + str(delta_right) + ',' + str(((self.total_ticks - self.last_eat_time)/100000)) + ',' + str(last_choice_x) + ',' + str(last_choice_y) + ',' + str(up_safe) + ',' + str(
+            print(str(delta_up) + ',' + str(delta_down) + ',' + str(delta_left) + ',' + str(delta_right) + ',' + str(((self.total_ticks - self.last_eat_time)/100000)) + ',' + str(body_in_way) + ',' + str(last_choice_x) + ',' + str(last_choice_y) + ',' + str(up_safe) + ',' + str(
                 down_safe) + ',' + str(left_safe) + ',' + str(right_safe) + ',' + str(choice))
             self.last_choice = choice
             # Based on choice, set direction to change to
@@ -260,4 +292,4 @@ class SnakeGame:
             pygame.display.update()
             # Refresh rate
             self.fps_controller.tick(self.difficulty)
-            self.total_ticks += self.difficulty
+            self.total_ticks += 100

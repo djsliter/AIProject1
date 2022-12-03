@@ -1,4 +1,5 @@
 import os
+
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import copy
 import itertools
@@ -14,30 +15,30 @@ import nogui_game
 
 
 def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes):
-    game1 = nogui_game.SnakeGame(120, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
+    game1 = nogui_game.SnakeGame(200, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
     game1.runGame()
-    game2 = nogui_game.SnakeGame(120, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
+    game2 = nogui_game.SnakeGame(200, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
     game2.runGame()
-    game3 = nogui_game.SnakeGame(120, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
+    game3 = nogui_game.SnakeGame(200, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
     game3.runGame()
 
     """ Calculate the fitness of an individual. """
 
     #food_score = game1.score * 1000  # weigh picking up more food heavily
     #time_score = game1.total_ticks  # use time in seconds as survival
-    food_score1 = math.sqrt(math.pow(game1.score, 3)) * 2000  # weigh picking up more food heavily
+    food_score1 = math.sqrt(math.pow(game1.score, 3)) * 3000  # weigh picking up more food heavily
     time_score1 = (game1.total_ticks/10)  # use time in seconds as survival
-    food_score2 = math.sqrt(math.pow(game2.score, 3)) * 2000  # weigh picking up more food heavily
+    food_score2 = math.sqrt(math.pow(game2.score, 3)) * 3000  # weigh picking up more food heavily
     time_score2 = (game2.total_ticks/10)  # use time in seconds as survival
-    food_score3 = math.sqrt(math.pow(game3.score, 3)) * 2000  # weigh picking up more food heavily
+    food_score3 = math.sqrt(math.pow(game3.score, 3)) * 3000  # weigh picking up more food heavily
     time_score3 = (game3.total_ticks/10)  # use time in seconds as survival
     dist_to_food1 = math.sqrt(math.pow((game1.snake_pos[0]-game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1]-game1.food_pos[1]), 2))
-    death_score1 = (dist_to_food1 / 2) * 5
+    death_score1 = (1/dist_to_food1) * 2500
     dist_to_food2 = math.sqrt(math.pow((game2.snake_pos[0]-game2.food_pos[0]), 2) + math.pow((game2.snake_pos[1]-game2.food_pos[1]), 2))
-    death_score2 = (dist_to_food2 / 2) * 5
+    death_score2 = (1/dist_to_food2 / 2) * 2500
     dist_to_food3 = math.sqrt(math.pow((game3.snake_pos[0]-game3.food_pos[0]), 2) + math.pow((game3.snake_pos[1]-game3.food_pos[1]), 2))
-    death_score3 = (dist_to_food3 / 2) * 5
-
+    death_score3 = (1/dist_to_food3 / 2) * 2500
+    delta_d_score1 = (game1.delta_sum/game1.total_ticks) * 2500000
     avg_food_score = (food_score1 + food_score2 + food_score3)/3.0
     avg_time_score = (time_score1 + time_score2 + time_score3)/3.0
     avg_death_score = (death_score1 + death_score2 + death_score3)/3.0
@@ -55,13 +56,13 @@ def random_selection(sample):
 
 
 def mutate_slightly(value):
-    random_change = random.uniform(-0.1, 0.1)  # randomly mutates by -0.1 to 0.1
+    random_change = random.uniform(-0.2, 0.2)  # randomly mutates by -0.1 to 0.1
 
     new_weight = value + random_change
-    if new_weight <= -1.0:  # keep weights above -1
-        return -1.0
-    elif new_weight >= 1.0:  # keep weights below 1
-        return 1.0
+    if new_weight <= -2.0:  # keep weights above -1
+        return -2.0
+    elif new_weight >= 2.0:  # keep weights below 1
+        return 2.0
     else:
         return new_weight
 
@@ -92,9 +93,13 @@ args = parser.parse_args()
 
 input_count = args.inputs
 output_node_count = args.output_nodes
+input_node_count = args.input_nodes
+hidden_node_count = args.hidden_nodes
+hidden_node2_count = 12
+hidden_node3_count = 8
 
 pop_size = args.pop
-genome_size = input_count * args.input_nodes + args.input_nodes * args.hidden_nodes + args.hidden_nodes * output_node_count
+genome_size = input_count * input_node_count + input_node_count * hidden_node_count + hidden_node_count * hidden_node2_count + hidden_node2_count*hidden_node3_count + hidden_node3_count * output_node_count
 num_gens = args.gens
 
 elitism = args.eliteism
@@ -197,7 +202,7 @@ if __name__ == '__main__':
         if elitism:
             print("Keeping Elite Individual")
 
-            top_10_idx = np.argsort(fitnesses)[-10:]
+            top_10_idx = np.argsort(fitnesses)[-3:]
             top_10_values = [fitnesses[i] for i in top_10_idx]
             for v in top_10_values:
                 new_pop.append(copy.deepcopy(population[fitnesses.index(v)]))
@@ -207,13 +212,57 @@ if __name__ == '__main__':
 
             # Select two parents.
             par_1 = copy.deepcopy(tournament_selection(random.sample(population, 8), fitnesses, population))
-            par_2 = copy.deepcopy(tournament_selection(random.sample(population, 8), fitnesses, population))
+            par_2 = copy.deepcopy(tournament_selection(random.sample(population, 4), fitnesses, population))
 
             # Perform crossover.
             new_ind = par_1[:]
             if random.random() < cx_rate:
-                crossover_point = random.choice([0, genome_size])
-                new_ind = par_1[:crossover_point] + par_2[crossover_point:]
+                if random.random() >= 0.5:
+                    crossover_point = random.choice([0, genome_size])
+                    new_ind = par_1[:crossover_point] + par_2[crossover_point:]
+                else:
+                    gene_indeces = []
+                    increment_counter = 0
+                    for a in range(0, input_count):
+                        temp_lst = []
+                        for b in range(0, input_node_count):
+                            temp_lst.append(increment_counter)
+                            increment_counter += 1
+                        gene_indeces.append(temp_lst)
+                    for a in range(0, input_node_count):
+                        temp_lst = []
+                        for b in range(0, hidden_node_count):
+                            temp_lst.append(increment_counter)
+                            increment_counter += 1
+                        gene_indeces.append(temp_lst)
+                    for a in range(0, hidden_node_count):
+                        temp_lst = []
+                        for b in range(0, hidden_node2_count):
+                            temp_lst.append(increment_counter)
+                            increment_counter += 1
+                        gene_indeces.append(temp_lst)
+                    for a in range(0, hidden_node2_count):
+                        temp_lst = []
+                        for b in range(0, hidden_node3_count):
+                            temp_lst.append(increment_counter)
+                            increment_counter += 1
+                        gene_indeces.append(temp_lst)
+                    for a in range(0, hidden_node3_count):
+                        temp_lst = []
+                        for b in range(0, output_node_count):
+                            temp_lst.append(increment_counter)
+                            increment_counter += 1
+                        gene_indeces.append(temp_lst)
+                    num_genes_from_parent_1 = random.randint(1, (len(gene_indeces) - 1))
+                    nodes_indeces_from_par_1 = random.sample(gene_indeces, num_genes_from_parent_1)
+                    for a in nodes_indeces_from_par_1:
+                        gene_indeces.remove(a)
+                    new_ind = []
+                    for a in range(0, increment_counter):
+                        if any(a in indeces for indeces in nodes_indeces_from_par_1):
+                            new_ind.append(par_1[a])
+                        else:
+                            new_ind.append(par_2[a])
 
             # Slightly mutate the individual.
             new_ind = [i if random.random() > mut_rate else (mutate_slightly(i)) for i in new_ind]
