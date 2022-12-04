@@ -74,7 +74,7 @@ class SnakeGame:
     def runGame(self):
         # Initialise game window
         neural_net = nn.NeuralNetwork((self.input_count,), self.input_node_count,
-                                      (self.input_node_count, self.hidden_node_count), self.hidden_node_count, (self.hidden_node_count, self.hidden_node2_count), self.hidden_node2_count, (self.hidden_node2_count, self.hidden_node3_count), self.hidden_node3_count,
+                                      (self.input_node_count, self.hidden_node_count), self.hidden_node_count,
                                       (self.hidden_node_count, self.output_node_count), self.output_node_count)
         neural_net.set_weights_from_genome(self.genome)
         self.last_choice = 1
