@@ -1,14 +1,9 @@
 import os
-
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
-import copy
-import itertools
 import math
 import numpy as np
-import random
 import pygame
 import argparse
-import ast
 import multiprocessing as mp
 from neato import Ecosystem
 
@@ -34,13 +29,11 @@ def fit_func(individual):
     food_score /= 3.0
     if food_score <= 2000.0:
         food_score = death_score
-        
+
     print('Foodscore: ' + str((food_sum)) + ' Fitness: ' + str(food_score + time_score))  # + avg_death_score
     
     return food_score + time_score  # + avg_death_score
 
-
-# note: can't specify number of inputs (not input nodes) because NN constructor uses inputs as args
 parser = argparse.ArgumentParser()
 parser.add_argument('--pop', nargs='?', type=int, default=25,
                     help='Specify the number of individuals in the population (default 25)')
@@ -81,17 +74,14 @@ mut_rate = args.mut_rate  # 2 / genome_size
 big_mut_rate = args.big_mut_rate
 cx_rate = args.cx_rate  # 1/2
 disable_rate = args.disable_rate
-
 save_rate = args.save_rate
 
-# print(population)
 if __name__ == '__main__':
     ecosystem = Ecosystem()
     ecosystem.create_initial_population(pop_size, input_size=input_count, output_size=output_node_count)
     for generation in range(0, num_gens):
-        print("\nGeneration: {}".format(generation), end=" ")
+        print("\n" + str(ecosystem))
         print("-" * 80 + " ")
-        print(str(len(ecosystem.get_population())))
 
         # test genomes and score fitness
         index = 0
@@ -112,8 +102,8 @@ if __name__ == '__main__':
             with open('generations\\gen' + str(generation) + '.txt', 'w') as f:
                 f.write(str(pop_size))
                 for genome in ecosystem.get_population():
-                    f.write(str(genome) + '\n\n')
-                f.write(str(fitnesses) + '\n')
+                    f.write(str(genome))
+                f.write(str(fitnesses))
             f.close()
 
         # crossover randomly from the top 50
@@ -134,3 +124,4 @@ if __name__ == '__main__':
             #         ecosystem.next_generation(kill_percentage=55)
             # else:
             #     ecosystem.next_generation(kill_percentage=50)
+# python3 testneat.py --pop 100 --eliteism --gens 2 --mut_rate 0.005 --big_mut_rate 0.0002 --cx_rate 0.50 --hidden_nodes 20 --inputs 10 --input_nodes 5 --output_nodes 4 --disable_rate 0.0002 --save_rate 1
