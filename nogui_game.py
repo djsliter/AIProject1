@@ -7,7 +7,7 @@ import numpy as np
 
 def calcDistFromPoints(snakehead, food):
     # distance formula (normalized to board size)
-    distance = math.sqrt(math.pow((snakehead[0]-food[0]), 2) + math.pow((snakehead[1]-food[1]), 2)) / 850
+    distance = math.sqrt(math.pow((snakehead[0] - food[0]), 2) + math.pow((snakehead[1] - food[1]), 2)) / 850
     return distance
     # if snakehead[0] > food[0]:
     #     x_dir = -1
@@ -22,12 +22,18 @@ def calcDistFromPoints(snakehead, food):
     # else:
     #     y_dir = 1
 
+
 class SnakeGame:
-    def __init__(self, difficulty, genome, input_count=5, input_node_count=6, hidden_node_count=10, output_node_count=4, pygame=pygame):
+    def __init__(self, difficulty, genome, input_count=11, input_node_count=11, hidden_node_count=16, hidden_node2_count=12, hidden_node3_count=8, output_node_count=4,
+                 pygame=pygame):
+        self.delta_sum = 0
+        self.last_eat_time = None
         self.input_count = input_count
         self.input_node_count = input_node_count
         self.hidden_node_count = hidden_node_count
         self.output_node_count = output_node_count
+        self.hidden_node2_count = hidden_node2_count
+        self.hidden_node3_count = hidden_node3_count
         # Difficulty settings
         # Easy      ->  10, Medium    ->  25, Hard      ->  40, Harder    ->  60, Impossible->  120
         self.difficulty = difficulty
@@ -42,16 +48,16 @@ class SnakeGame:
         # pygame.init() example output -> (6, 0)
         if check_errors[1] > 0:
             print(f'[!] Had {check_errors[1]} errors when initialising game, exiting...')
-            sys.exit(-1)
-
+            pygame.init()
         # FPS (frames per second) controller
         self.fps_controller = pygame.time.Clock()
 
         # Game variables
         self.snake_pos = [100, 50]
-        self.snake_body = [[100, 50], [100-10, 50], [100-(2*10), 50]]
+        self.snake_body = [[100, 50], [100 - 10, 50], [100 - (2 * 10), 50]]
 
-        self.food_pos = [random.randrange(1, (self.frame_size_x//10)) * 10, random.randrange(1, (self.frame_size_y//10)) * 10]
+        self.food_pos = [random.randrange(1, (self.frame_size_x // 10)) * 10,
+                         random.randrange(1, (self.frame_size_y // 10)) * 10]
         self.food_spawn = True
 
         self.direction = 'RIGHT'
@@ -63,13 +69,12 @@ class SnakeGame:
     # Game Over
     def game_over(self):
         self.pygame.quit()
-        #sys.exit()
+        # sys.exit()
 
     def runGame(self):
         # Initialise game window
-
         neural_net = nn.NeuralNetwork((self.input_count,), self.input_node_count,
-                                      (self.input_node_count, self.hidden_node_count), self.hidden_node_count,
+                                      (self.input_node_count, self.hidden_node_count), self.hidden_node_count, (self.hidden_node_count, self.hidden_node2_count), self.hidden_node2_count, (self.hidden_node2_count, self.hidden_node3_count), self.hidden_node3_count,
                                       (self.hidden_node_count, self.output_node_count), self.output_node_count)
         neural_net.set_weights_from_genome(self.genome)
         self.last_choice = 1
@@ -145,16 +150,16 @@ class SnakeGame:
             else:
                 down_safe = 1
 
-
-
             delta_up = dist_current - dist_up
             delta_down = dist_current - dist_down
             delta_left = dist_current - dist_left
             delta_right = dist_current - dist_right
 
-
             # Neural net makes a choice
-            choice = neural_net.runModel(np.array([[delta_up, delta_down, delta_left, delta_right, str(((self.total_ticks - self.last_eat_time)/100000)), last_choice_x, last_choice_y, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
+            choice = neural_net.runModel(np.array([[delta_up, delta_down, delta_left, delta_right,
+                                                    str(((self.total_ticks - self.last_eat_time) / 100000)),
+                                                    last_choice_x, last_choice_y, up_safe, down_safe, left_safe,
+                                                    right_safe]], dtype=np.float32))
             # choice = neural_net.runModel(np.array([[distance_from_head_x_to_food_x, distance_from_head_y_to_food_y, delta_x, delta_y, normalized_dir_x, normalized_dir_y, direction_x, direction_y, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
             # last_x_dist_head_to_food = distance_from_head_x_to_food_x
             # last_y_dist_head_to_food = distance_from_head_y_to_food_y
@@ -174,7 +179,7 @@ class SnakeGame:
             if choice == 1:
                 last_choice_x = 1
                 last_choice_y = 0
-                if self.direction != 'LEFT':# up = 0, right = 1, down = 2, left = 3
+                if self.direction != 'LEFT':  # up = 0, right = 1, down = 2, left = 3
                     self.change_to = 'RIGHT'
             if choice == 2:
                 last_choice_x = 0
@@ -199,12 +204,16 @@ class SnakeGame:
             # Moving the snake
             if self.direction == 'UP':
                 self.snake_pos[1] -= 10
+                self.delta_sum += delta_up
             if self.direction == 'DOWN':
                 self.snake_pos[1] += 10
+                self.delta_sum += delta_down
             if self.direction == 'LEFT':
                 self.snake_pos[0] -= 10
+                self.delta_sum += delta_left
             if self.direction == 'RIGHT':
                 self.snake_pos[0] += 10
+                self.delta_sum += delta_right
 
             # Snake body growing mechanism
             self.snake_body.insert(0, list(self.snake_pos))
@@ -242,4 +251,4 @@ class SnakeGame:
 
             # Refresh rate
             self.fps_controller.tick(self.difficulty)
-            self.total_ticks += self.difficulty
+            self.total_ticks += 100

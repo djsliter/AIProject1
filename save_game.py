@@ -1,3 +1,4 @@
+import copy
 import math
 
 import pygame, sys, time, random
@@ -158,8 +159,39 @@ class SnakeGame:
             if self.change_to == 'RIGHT':
                 decision = 1
 
+            x_dif = math.fabs(self.snake_pos[0] - self.food_pos[0])
+            y_dif = math.fabs(self.snake_pos[1] - self.food_pos[1])
+            new_pos = copy.deepcopy(self.snake_pos)
+
+            body_in_way = 0
+            loops = 0
+            while (x_dif > 0 or y_dif > 0) and loops < 4:
+                if new_pos[0] < self.food_pos[0]:
+                    new_pos[0] += 10
+                    if new_pos in self.snake_body:
+                        body_in_way = 1
+                        break
+                elif new_pos[0] > self.food_pos[0]:
+                    new_pos[0] -= 10
+                    if new_pos in self.snake_body:
+                        body_in_way = 1
+                        break
+                if new_pos[1] < self.food_pos[1]:
+                    new_pos[1] += 10
+                    if new_pos in self.snake_body:
+                        body_in_way = 1
+                        break
+                elif new_pos[1] > self.food_pos[1]:
+                    new_pos[1] -= 10
+                    if new_pos in self.snake_body:
+                        body_in_way = 1
+                        break
+                loops += 1
+                x_dif = math.fabs(new_pos[0] - self.food_pos[0])
+                y_dif = math.fabs(new_pos[1] - self.food_pos[1])
+
             with open('manualsave.csv', 'a') as f:
-                f.write(str(delta_up) + ',' + str(delta_down) + ',' + str(delta_left) + ',' + str(delta_right) + ',' + str(((self.total_ticks - self.last_eat_time)/100000)) + ',' + str(last_choice_x) + ',' + str(last_choice_y) + ',' + str(up_safe) + ',' + str(down_safe) + ',' + str(left_safe) + ',' + str(right_safe) + ',' + str(decision) + '\n')
+                f.write(str(delta_up) + ',' + str(delta_down) + ',' + str(delta_left) + ',' + str(delta_right) + ',' + str(((self.total_ticks - self.last_eat_time)/100000)) + ',' + str(body_in_way) + ',' + str(last_choice_x) + ',' + str(last_choice_y) + ',' + str(up_safe) + ',' + str(down_safe) + ',' + str(left_safe) + ',' + str(right_safe) + ',' + str(decision) + '\n')
                 # f.write(str(distance_from_head_x_to_food_x) + ',' + str(distance_from_head_y_to_food_y)+ ',' + str(delta_x) + ',' + str(delta_y) + ',' + str(normalized_dir_x) + ',' + str(normalized_dir_y) + ',' + str(direction_x) + ',' + str(direction_y) + ',' + str(up_safe) + ',' + str(down_safe) + ',' + str(left_safe) + ',' + str(right_safe) + ',' + str(decision) + '\n')
             f.close()
 
