@@ -22,7 +22,9 @@ class NeuralNetwork:
 
         # Add layers to the model
         self.input_layer = self.model.add(Dense(num_in_nodes, input_shape=in_dim, activation="relu", name="Input"))
-        self.hidden_layer = self.model.add(Dense(num_hidden_nodes, activation="relu", name="Hidden"))
+        self.hidden_layer1 = self.model.add(Dense(num_hidden_nodes, activation="relu", name="Hidden"))
+        self.hidden_layer2 = self.model.add(Dense(num_hidden_nodes, activation="relu", name="Hidden2"))
+        self.hidden_layer3 = self.model.add(Dense(num_hidden_nodes, activation="relu", name="Hidden3"))
         self.out_layer = self.model.add(Dense(num_output_nodes, activation="relu", name="Output"))
 
         # Compiles the model, allows us to call it below
@@ -48,22 +50,23 @@ class NeuralNetwork:
         # properly in accordance with the provided 1D array. Tricky, requires
         # reshaping segments of the genome array, setting bias values to 0, etc.
         num_inputs = self.in_dim[0]
-
+        # np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_in_nodes)] for _ in range(0, num_inputs)], dtype=np.float32)
         dyn_wts = [
-            np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_in_nodes)]
-                  for _ in range(0, num_inputs)], dtype=np.float32),
+            np.array([[genome[i] for i in range(0, self.num_in_nodes)] for _ in range(0, num_inputs)], dtype=np.float32),
             np.array([0.0 for _ in range(0, self.num_in_nodes)], dtype=np.float32),
-            np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_hidden_nodes)]
-                      for _ in range(0, self.num_in_nodes)], dtype=np.float32),
+            np.array([[genome[i] for i in range(0, self.num_hidden_nodes)] for _ in range(0, self.num_in_nodes)], dtype=np.float32),
             np.array([0.0 for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
-            np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_output_nodes)]
-                      for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
+            np.array([[genome[i] for i in range(0, self.num_hidden_nodes)] for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
+            np.array([0.0 for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
+            np.array([[genome[i] for i in range(0, self.num_hidden_nodes)] for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
+            np.array([0.0 for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
+            np.array([[genome[i] for i in range(0, self.num_output_nodes)] for _ in range(0, self.num_hidden_nodes)], dtype=np.float32),
             np.array([0.0 for _ in range(0, self.num_output_nodes)], dtype=np.float32)
         ]
         # Need to build the shape of wts above from provided genome
         self.model.set_weights(dyn_wts)
 
-        # Runs data through model as a function
+    # Runs data through model as a function
     def runModel(self, data):
         # Normalize input data to reduce magnitude differences
         normalized_data = keras.layers.UnitNormalization()(data)

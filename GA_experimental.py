@@ -42,7 +42,7 @@ disable_rate = args.disable_rate
 
 save_rate = args.save_rate
 
-# python3 genetic_alg_class.py --eliteism --gens 25 --mut_rate 0.1 --cx_rate 0.12 --hidden_nodes 10 --inputs 8 --input_nodes 6 --output_nodes 4 --disable_rate 0.00 --save_rate 2 --start_file generations/lastGen.tx
+# python3 genetic_alg_class.py --eliteism --gens 25 --mut_rate 0.1 --cx_rate 0.12 --hidden_nodes 10 --inputs 8 --input_nodes 6 --output_nodes 4 --disable_rate 0.00 --save_rate 2 --start_file generations/lastGen.txt
 
 def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes):
     game1 = nogui_game.SnakeGame(120, individual, num_inputs, input_node_count, hidden_node_count, num_output_nodes, pygame)
@@ -53,14 +53,14 @@ def fit_func(individual, num_inputs, input_node_count, hidden_node_count, num_ou
     time_score = (game1.total_ticks/10)  # use time in seconds as survival
     
     dist_to_food = math.sqrt(math.pow((game1.snake_pos[0]-game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1]-game1.food_pos[1]), 2))
-    death_score = (dist_to_food / 2) * 5
+    death_score = (1/dist_to_food) * 100000
 
     if game1.score > 0:
         print("SCORE: ", game1.score)
     return food_score + time_score + death_score
 
 def tournament_selection(sample):
-    scores = [sum(ind) for ind in sample]
+    scores = [fitnesses[population.index(ind)] for ind in sample]
     return sample[scores.index(max(scores))]
 
 def random_selection(sample):
@@ -161,17 +161,22 @@ if __name__ == '__main__':
                 new_ind = par_1[:crossover_point] + par_2[crossover_point:]
 
             # Slightly mutate the individual.
-            new_ind = [i if random.random() > mut_rate else (mutate_slightly(i)) for i in new_ind]
+            # new_ind = [i if random.random() > mut_rate else (mutate_slightly(i)) for i in new_ind]
 
             # Mutate the individual.
-            new_ind = [i if random.random() > big_mut_rate else random.uniform(-1.0, 1.0) for i in new_ind]
+            new_ind = [i if random.random() > big_mut_rate else random.uniform(-2.0, 2.0) for i in new_ind]
 
             # Add to the population
             new_pop.append(new_ind)
 
         population = new_pop
+        print("max_fit = " + str(max(max_fitnesses)))
+        print("avg_fit = " + str(np.average(avg_fitnesses)))
 
     print()
     print("gens = " + str(num_gens))
     print("max_fit = " + str(max(max_fitnesses)))
     print("avg_fit = " + str(np.average(avg_fitnesses)))
+
+# python3 GA_experimental.py --pop 80 --eliteism --gens 50 --mut_rate 0.001 --cx_rate 0.84 --hidden_nodes 10 --inputs 11 --input_nodes 6 --output_nodes 4 --disable_rate 0.00 --save_rate 1
+# python3 GA_experimental.py --eliteism --gens 50 --mut_rate 0.001 --cx_rate 0.84 --hidden_nodes 10 --inputs 11 --input_nodes 6 --output_nodes 4 --disable_rate 0.00 --save_rate 2 --start_file generations/lastGen.txt
