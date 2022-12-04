@@ -16,39 +16,28 @@ import nogui_game2 as nogui_game
 
 
 def fit_func(individual):
-    game1 = nogui_game.SnakeGame(200, individual, pygame)
-    game1.runGame()
-    game2 = nogui_game.SnakeGame(200, individual, pygame)
-    game2.runGame()
-    game3 = nogui_game.SnakeGame(200, individual, pygame)
-    game3.runGame()
-
     """ Calculate the fitness of an individual. """
+    food_score, time_score, death_score = [0, 0, 0]
+    food_sum = 0
+    for _ in range(0, 3):
+        game = nogui_game.SnakeGame(200, individual, pygame)
+        game.runGame()
 
-    food_score1 = math.sqrt(math.pow(game1.score, 3)) * 3000  # weigh picking up more food heavily
-    time_score1 = (game1.total_ticks / 10)  # use time in seconds as survival
-    food_score2 = math.sqrt(math.pow(game2.score, 3)) * 3000  # weigh picking up more food heavily
-    time_score2 = (game2.total_ticks / 10)  # use time in seconds as survival
-    food_score3 = math.sqrt(math.pow(game3.score, 3)) * 3000  # weigh picking up more food heavily
-    time_score3 = (game3.total_ticks / 10)  # use time in seconds as survival
-    dist_to_food1 = math.sqrt(
-        math.pow((game1.snake_pos[0] - game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1] - game1.food_pos[1]), 2))
-    death_score1 = (1 / dist_to_food1) * 80000
-    dist_to_food2 = math.sqrt(
-        math.pow((game2.snake_pos[0] - game2.food_pos[0]), 2) + math.pow((game2.snake_pos[1] - game2.food_pos[1]), 2))
-    death_score2 = (1 / dist_to_food2) * 80000
-    dist_to_food3 = math.sqrt(
-        math.pow((game3.snake_pos[0] - game3.food_pos[0]), 2) + math.pow((game3.snake_pos[1] - game3.food_pos[1]), 2))
-    death_score3 = (1 / dist_to_food3) * 80000
-    avg_death_score = (death_score1 + death_score2 + death_score3) / 3.0
-
-    avg_food_score = (food_score1 + food_score2 + food_score3) / 3.0
-    if (avg_food_score) <= 2000.0:
-        avg_food_score = avg_death_score
-    avg_time_score = (time_score1 + time_score2 + time_score3) / 3.0
-    print('Foodscore: ' + str((game1.score + game2.score + game3.score)) + ' Fitness: ' + str(
-        avg_food_score + avg_time_score))  # + avg_death_score
-    return avg_food_score + avg_time_score  # + avg_death_score
+        food_sum += game.score
+        food_score += math.sqrt(math.pow(game.score, 3)) * 3000  # weigh picking up more food heavily
+        time_score += (game.total_ticks / 10)  # use time in seconds as survival
+        dist_to_food = math.sqrt(math.pow((game.snake_pos[0] - game.food_pos[0]), 2) + math.pow((game.snake_pos[1] - game.food_pos[1]), 2))
+        death_score += (1 / dist_to_food) * 80000
+    
+    time_score /= 3.0
+    death_score /= 3.0
+    food_score /= 3.0
+    if food_score <= 2000.0:
+        food_score = death_score
+        
+    print('Foodscore: ' + str((food_sum)) + ' Fitness: ' + str(food_score + time_score))  # + avg_death_score
+    
+    return food_score + time_score  # + avg_death_score
 
 
 # note: can't specify number of inputs (not input nodes) because NN constructor uses inputs as args
