@@ -127,13 +127,12 @@ if __name__ == '__main__':
         ecosystem.create_initial_population(pop_size, input_size=input_count, output_size=output_node_count)
     else:
         parent = Genome(inputs, outputs)
-        print(parent)
         for connec in connections:
             nid1 = connec.split("-")[0]
             nid2 = connec.split("-")[1].split("[")[0]
             weight = connec.split("]")[1]
             parent.add_connection(int(nid1), int(nid2), float(weight))
-        ecosystem.create_initial_population(pop_size, parent_genome=parent, input_size=input_count, output_size=output_node_count)
+        ecosystem.create_initial_population(pop_size, parent_genome=parent)
     for generation in range(0, num_gens):
         print("\nGeneration: {}".format(generation), end=" ")
         print("-" * 80 + " ")
@@ -157,7 +156,7 @@ if __name__ == '__main__':
         if generation % save_rate == 0:
             with open('generations\\gen' + str(generation) + '.txt', 'w') as f:
                 f.write(str(pop_size))
-                f.write(str(genome))
+                f.write(str(best_genome))
                 f.write(str(fitnesses))
             f.close()
 
