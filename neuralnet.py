@@ -50,7 +50,6 @@ class NeuralNetwork:
         # properly in accordance with the provided 1D array. Tricky, requires
         # reshaping segments of the genome array, setting bias values to 0, etc.
         num_inputs = self.in_dim[0]
-        # np.array([[self.increment_gene_count(genome[self.genes_populated]) for _ in range(0, self.num_in_nodes)] for _ in range(0, num_inputs)], dtype=np.float32)
         dyn_wts = [
             np.array([[genome[i] for i in range(0, self.num_in_nodes)] for _ in range(0, num_inputs)], dtype=np.float32),
             np.array([0.0 for _ in range(0, self.num_in_nodes)], dtype=np.float32),
@@ -74,5 +73,4 @@ class NeuralNetwork:
         q = self.model(normalized_data)
         # Sets action to the output node index with highest value
         action = np.argmax(q)
-        # print("ACTION VALUE: ", q[0][action], "\nACTION: ", action)
         return action
