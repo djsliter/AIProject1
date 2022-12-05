@@ -55,7 +55,6 @@ class SnakeGame:
     # Game Over
     def game_over(self):
         self.pygame.quit()
-        # sys.exit()
 
     def runGame(self):
         # Initialise game window
