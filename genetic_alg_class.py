@@ -82,13 +82,6 @@ parser.add_argument('--disable_rate', nargs='?', type=float, default=0.001, help
 parser.add_argument('--save_rate', nargs='?', type=int, default=5, help='Specify how frequently to save the current generation to a file')
 
 args = parser.parse_args()
-# print(args.pop)
-# print(args.eliteism)
-# print(args.gens)
-# print(args.mut_rate)
-# print(args.cx_rate)
-# print(args.hidden_nodes)
-# print(args.input_nodes)
 
 input_count = args.inputs
 output_node_count = args.output_nodes
@@ -131,11 +124,8 @@ else:
                 population.append(ast.literal_eval(f.readline()))
             for i in range(pop_size - temp):
                 population.append([random.uniform(-2.0, 2.0) for _ in range(genome_size)])
-
-
     f.close()
 
-# print(population)
 if __name__ == '__main__':
     gen_count = 1
     for gen in range(num_gens):
@@ -177,10 +167,6 @@ if __name__ == '__main__':
         max_fitnesses.append(max(fitnesses))
         avg_fitnesses.append(sum(fitnesses) / len(fitnesses))
 
-        # print("Population Genomes:")
-        # for p in population:
-        #     print("\t\t\t", p)
-
         # Calculate duplicates
         duplicates = copy.deepcopy(population)
         duplicates.sort()
@@ -189,9 +175,6 @@ if __name__ == '__main__':
         num_clones.append(pop_size - len(list(k for k, _ in itertools.groupby(duplicates))))
 
         print("\tNumber of Clones in Population: {}".format(num_clones[-1]))
-        # print("\tUnique Genomes in Population: ")
-        # for clone in list(k for k, _ in itertools.groupby(duplicates)):
-        #     print("\t\t\t\t", clone)
 
         new_pop = []
 
@@ -203,7 +186,6 @@ if __name__ == '__main__':
             top_10_values = [fitnesses[i] for i in top_10_idx]
             for v in top_10_values:
                 new_pop.append(copy.deepcopy(population[fitnesses.index(v)]))
-            # new_pop.append(copy.deepcopy(population[fitnesses.index(max(fitnesses))]))
 
         for _ in range(pop_size - len(new_pop)):
 
@@ -262,11 +244,6 @@ if __name__ == '__main__':
             new_pop.append(new_ind)
 
         population = new_pop
-
-    # Print out final population
-    # print("\n\n\nFinal Population is:")
-    # for p in population:
-    #     print(f"Fitness: {fit_func(p)}, Individual: {p}")
 
     # Print out final tracking information.
     print()
