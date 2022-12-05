@@ -11,6 +11,7 @@ import argparse
 import ast
 import multiprocessing as mp
 from neato import Ecosystem
+from neato import Genome
 
 import nogui_game2 as nogui_game
 
@@ -95,10 +96,44 @@ disable_rate = args.disable_rate
 
 save_rate = args.save_rate
 
+if args.start_file == '':
+    pass
+else:
+    inputs = 0
+    outputs = 0
+    conn = 0
+    nodes = []
+    connections = []
+    with open(args.start_file, 'r') as f:
+        data = f.read()
+        data = data.replace('\t', '')
+        data = data.replace(' ', '')
+        data = data.split("\n")
+        pop_size = int(data[0])
+        input_genome = data[1:len(data) - 1]
+        input_fit = data[len(data) - 1]
+        for line in input_genome:
+            if "input" in line:
+                inputs += 1
+            if "output" in line:
+                outputs += 1
+            if "[O]" in line or "[X]" in line:
+                connections.append(line.split(":")[1])
+
 # print(population)
 if __name__ == '__main__':
     ecosystem = Ecosystem()
-    ecosystem.create_initial_population(pop_size, input_size=input_count, output_size=output_node_count)
+    if args.start_file == '':
+        ecosystem.create_initial_population(pop_size, input_size=input_count, output_size=output_node_count)
+    else:
+        parent = Genome(inputs, outputs)
+        print(parent)
+        for connec in connections:
+            nid1 = connec.split("-")[0]
+            nid2 = connec.split("-")[1].split("[")[0]
+            weight = connec.split("]")[1]
+            parent.add_connection(int(nid1), int(nid2), float(weight))
+        ecosystem.create_initial_population(pop_size, parent_genome=parent, input_size=input_count, output_size=output_node_count)
     for generation in range(0, num_gens):
         print("\nGeneration: {}".format(generation), end=" ")
         print("-" * 80 + " ")
@@ -122,9 +157,8 @@ if __name__ == '__main__':
         if generation % save_rate == 0:
             with open('generations\\gen' + str(generation) + '.txt', 'w') as f:
                 f.write(str(pop_size))
-                for genome in ecosystem.get_population():
-                    f.write(str(genome) + '\n\n')
-                f.write(str(fitnesses) + '\n')
+                f.write(str(genome))
+                f.write(str(fitnesses))
             f.close()
 
         # crossover randomly from the top 50
