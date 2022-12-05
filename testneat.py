@@ -1,39 +1,58 @@
 import os
+
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import copy
+import itertools
 import math
 import numpy as np
+import random
 import pygame
 import argparse
+import ast
 import multiprocessing as mp
 from neato import Ecosystem
+from neato import Genome
 
 import nogui_game2 as nogui_game
 
 
 def fit_func(individual):
+    game1 = nogui_game.SnakeGame(200, individual, pygame)
+    game1.runGame()
+    game2 = nogui_game.SnakeGame(200, individual, pygame)
+    game2.runGame()
+    game3 = nogui_game.SnakeGame(200, individual, pygame)
+    game3.runGame()
+
     """ Calculate the fitness of an individual. """
-    food_score, time_score, death_score = [0, 0, 0]
-    food_sum = 0
-    for _ in range(0, 3):
-        game = nogui_game.SnakeGame(200, individual, pygame)
-        game.runGame()
 
-        food_sum += game.score
-        food_score += math.sqrt(math.pow(game.score, 3)) * 3000  # weigh picking up more food heavily
-        time_score += (game.total_ticks / 10)  # use time in seconds as survival
-        dist_to_food = math.sqrt(math.pow((game.snake_pos[0] - game.food_pos[0]), 2) + math.pow((game.snake_pos[1] - game.food_pos[1]), 2))
-        death_score += (1 / dist_to_food) * 80000
-    
-    time_score /= 3.0
-    death_score /= 3.0
-    food_score /= 3.0
-    if food_score <= 2000.0:
-        food_score = death_score
+    food_score1 = math.sqrt(math.pow(game1.score, 3)) * 3000  # weigh picking up more food heavily
+    time_score1 = (game1.total_ticks / 10)  # use time in seconds as survival
+    food_score2 = math.sqrt(math.pow(game2.score, 3)) * 3000  # weigh picking up more food heavily
+    time_score2 = (game2.total_ticks / 10)  # use time in seconds as survival
+    food_score3 = math.sqrt(math.pow(game3.score, 3)) * 3000  # weigh picking up more food heavily
+    time_score3 = (game3.total_ticks / 10)  # use time in seconds as survival
+    dist_to_food1 = math.sqrt(
+        math.pow((game1.snake_pos[0] - game1.food_pos[0]), 2) + math.pow((game1.snake_pos[1] - game1.food_pos[1]), 2))
+    death_score1 = (1 / dist_to_food1) * 80000
+    dist_to_food2 = math.sqrt(
+        math.pow((game2.snake_pos[0] - game2.food_pos[0]), 2) + math.pow((game2.snake_pos[1] - game2.food_pos[1]), 2))
+    death_score2 = (1 / dist_to_food2) * 80000
+    dist_to_food3 = math.sqrt(
+        math.pow((game3.snake_pos[0] - game3.food_pos[0]), 2) + math.pow((game3.snake_pos[1] - game3.food_pos[1]), 2))
+    death_score3 = (1 / dist_to_food3) * 80000
+    avg_death_score = (death_score1 + death_score2 + death_score3) / 3.0
 
-    print('Foodscore: ' + str((food_sum)) + ' Fitness: ' + str(food_score + time_score))  # + avg_death_score
-    
-    return food_score + time_score  # + avg_death_score
+    avg_food_score = (food_score1 + food_score2 + food_score3) / 3.0
+    if (avg_food_score) <= 2000.0:
+        avg_food_score = avg_death_score
+    avg_time_score = (time_score1 + time_score2 + time_score3) / 3.0
+    print('Foodscore: ' + str((game1.score + game2.score + game3.score)) + ' Fitness: ' + str(
+        avg_food_score + avg_time_score))  # + avg_death_score
+    return avg_food_score + avg_time_score  # + avg_death_score
 
+
+# note: can't specify number of inputs (not input nodes) because NN constructor uses inputs as args
 parser = argparse.ArgumentParser()
 parser.add_argument('--pop', nargs='?', type=int, default=25,
                     help='Specify the number of individuals in the population (default 25)')
@@ -74,14 +93,50 @@ mut_rate = args.mut_rate  # 2 / genome_size
 big_mut_rate = args.big_mut_rate
 cx_rate = args.cx_rate  # 1/2
 disable_rate = args.disable_rate
+
 save_rate = args.save_rate
 
+if args.start_file == '':
+    pass
+else:
+    inputs = 0
+    outputs = 0
+    conn = 0
+    nodes = []
+    connections = []
+    with open(args.start_file, 'r') as f:
+        data = f.read()
+        data = data.replace('\t', '')
+        data = data.replace(' ', '')
+        data = data.split("\n")
+        pop_size = int(data[0])
+        input_genome = data[1:len(data) - 1]
+        input_fit = data[len(data) - 1]
+        for line in input_genome:
+            if "input" in line:
+                inputs += 1
+            if "output" in line:
+                outputs += 1
+            if "[O]" in line or "[X]" in line:
+                connections.append(line.split(":")[1])
+
+# print(population)
 if __name__ == '__main__':
     ecosystem = Ecosystem()
-    ecosystem.create_initial_population(pop_size, input_size=input_count, output_size=output_node_count)
+    if args.start_file == '':
+        ecosystem.create_initial_population(pop_size, input_size=input_count, output_size=output_node_count)
+    else:
+        parent = Genome(inputs, outputs)
+        for connec in connections:
+            nid1 = connec.split("-")[0]
+            nid2 = connec.split("-")[1].split("[")[0]
+            weight = connec.split("]")[1]
+            parent.add_connection(int(nid1), int(nid2), float(weight))
+        ecosystem.create_initial_population(pop_size, parent_genome=parent)
     for generation in range(0, num_gens):
-        print("\n" + str(ecosystem))
+        print("\nGeneration: {}".format(generation), end=" ")
         print("-" * 80 + " ")
+        print(str(len(ecosystem.get_population())))
 
         # test genomes and score fitness
         index = 0
@@ -101,27 +156,8 @@ if __name__ == '__main__':
         if generation % save_rate == 0:
             with open('generations\\gen' + str(generation) + '.txt', 'w') as f:
                 f.write(str(pop_size))
-                for genome in ecosystem.get_population():
-                    f.write(str(genome))
+                f.write(str(best_genome))
                 f.write(str(fitnesses))
             f.close()
-
-        # crossover randomly from the top 50
-        # if random.random() < cx_rate:
-        #     killed = ecosystem.kill_percentage(30)
-        #     print('killed ' + str(killed))
-        #     for x in range(0, killed):
-        #         parents = random.sample(ecosystem.get_population(), 2)
-        #         ecosystem.add_genome(ecosystem.cross(parents[0], parents[1]))
-        #     # ecosystem.next_generation(kill_percentage=0, mutate=True)
-        # else:
+            
         ecosystem.next_generation(kill_percentage=40, parent_genome=best_genome)
-
-            # if generation < 400:
-            #     if generation > 40 and generation % 10 == 0:
-            #         ecosystem.next_generation(kill_percentage=50, parent_genome=best_genome)
-            #     else:
-            #         ecosystem.next_generation(kill_percentage=55)
-            # else:
-            #     ecosystem.next_generation(kill_percentage=50)
-# python3 testneat.py --pop 100 --eliteism --gens 2 --mut_rate 0.005 --big_mut_rate 0.0002 --cx_rate 0.50 --hidden_nodes 20 --inputs 10 --input_nodes 5 --output_nodes 4 --disable_rate 0.0002 --save_rate 1
