@@ -94,10 +94,6 @@ for gen in range(num_gens):
     for clone in list(k for k, _ in itertools.groupby(duplicates)):
         print("\t\t\t\t", clone)
 
-    # Early Exit
-    # if max(fitnesses) == genome_size:
-    # 	break
-
     new_pop = []
 
     # Elitism
