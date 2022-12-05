@@ -181,11 +181,6 @@ class SnakeGame:
 
             # Neural net makes a choice
             choice = neural_net.runModel(np.array([[delta_up, delta_down, delta_left, delta_right, str(((self.total_ticks - self.last_eat_time)/100000)), body_in_way, last_choice_x, last_choice_y, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
-            # choice = neural_net.runModel(np.array([[distance_from_head_x_to_food_x, distance_from_head_y_to_food_y, delta_x, delta_y, normalized_dir_x, normalized_dir_y, direction_x, direction_y, up_safe, down_safe, left_safe, right_safe]], dtype=np.float32))
-
-            # print(str(distance_from_head_x_to_food_x) + ',' + str(distance_from_head_y_to_food_y) + ',' + str(delta_x) + ',' + str(delta_y) + ',' + str(
-            #     normalized_dir_x) + ',' + str(normalized_dir_y) + ',' + str(direction_x) + ',' + str(direction_y) + ',' + str(up_safe) + ',' + str(
-            #     down_safe) + ',' + str(left_safe) + ',' + str(right_safe) + ',' + str(choice))
             print(str(delta_up) + ',' + str(delta_down) + ',' + str(delta_left) + ',' + str(delta_right) + ',' + str(((self.total_ticks - self.last_eat_time)/100000)) + ',' + str(body_in_way) + ',' + str(last_choice_x) + ',' + str(last_choice_y) + ',' + str(up_safe) + ',' + str(
                 down_safe) + ',' + str(left_safe) + ',' + str(right_safe) + ',' + str(choice))
             self.last_choice = choice
@@ -251,9 +246,6 @@ class SnakeGame:
             game_window.fill(self.black)
             body_part = 0
             for pos in self.snake_body:
-                # Snake body
-                # .draw.rect(play_surface, color, xy-coordinate)
-                # xy-coordinate -> .Rect(x, y, size_x, size_y)
                 if body_part == 0:
                     pygame.draw.rect(game_window, self.magenta, pygame.Rect(pos[0], pos[1], 10, 10))
                 else:
@@ -267,26 +259,18 @@ class SnakeGame:
             # Game Over conditions -----------------------------------------------
             if self.total_ticks > self.last_eat_time + 100000:
                 self.game_over()
-                # print('total_ticks ' + str(self.total_ticks))
-                # print('score ' + str(self.score))
                 break
             # Getting out of bounds
             if self.snake_pos[0] < 0 or self.snake_pos[0] > self.frame_size_x - 10:
                 self.game_over()
-                # print('total_ticks ' + str(self.total_ticks))
-                # print('score ' + str(self.score))
                 break
             if self.snake_pos[1] < 0 or self.snake_pos[1] > self.frame_size_y - 10:
                 self.game_over()
-                # print('total_ticks ' + str(self.total_ticks))
-                # print('score ' + str(self.score))
                 break
             # Touching the snake body
             for block in self.snake_body[1:]:
                 if self.snake_pos[0] == block[0] and self.snake_pos[1] == block[1]:
                     self.game_over()
-                    # print('total_ticks ' + str(self.total_ticks))
-                    # print('score ' + str(self.score))
                     break
 
             pygame.display.update()
