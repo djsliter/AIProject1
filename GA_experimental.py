@@ -160,9 +160,6 @@ if __name__ == '__main__':
                 crossover_point = random.choice([0, genome_size])
                 new_ind = par_1[:crossover_point] + par_2[crossover_point:]
 
-            # Slightly mutate the individual.
-            # new_ind = [i if random.random() > mut_rate else (mutate_slightly(i)) for i in new_ind]
-
             # Mutate the individual.
             new_ind = [i if random.random() > big_mut_rate else random.uniform(-2.0, 2.0) for i in new_ind]
 
